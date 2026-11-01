@@ -1,0 +1,8 @@
+{
+  "id": "acme-mech",
+  "slot": "a",
+  "project": "acme-mech",
+  "hostname": "railway-check-a.theaipipe.com",
+  "access_name": "railway-check-a",
+  "marker": "acme-mech witness row 0001"
+}

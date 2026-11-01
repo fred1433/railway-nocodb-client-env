@@ -1,0 +1,8 @@
+name = "railway-check-backup-sink"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[[r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "railway-check-backups"

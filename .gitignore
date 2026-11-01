@@ -1,0 +1,8 @@
+.secrets/
+__pycache__/
+*.pyc
+.env
+.env.*
+.wrangler/
+node_modules/
+/tmp/

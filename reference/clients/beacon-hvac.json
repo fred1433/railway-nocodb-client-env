@@ -1,0 +1,8 @@
+{
+  "id": "beacon-hvac",
+  "slot": "b",
+  "project": "beacon-hvac",
+  "hostname": "railway-check-b.theaipipe.com",
+  "access_name": "railway-check-b",
+  "marker": "beacon-hvac witness row 0001"
+}
