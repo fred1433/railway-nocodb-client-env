@@ -275,7 +275,6 @@ def up(client, run):
     spec = desired(client, sec, lock, sink_url(acct))
     ids = ensure_services(pid, env, spec, run)
     ensure_volume(pid, env, ids, run)
-    ensure_private_name(env, ids, client, run)
     ensure_tunnel_route(acct, zone, client, sec, run)
 
     run.note("deploy", service="postgres")
@@ -285,6 +284,7 @@ def up(client, run):
     wait_log(boot, "DB_PHASE", 300)
     run.note("deploy", service="nocodb")
     wait_status(deploy(ids["nocodb"], env), ("SUCCESS",))
+    ensure_private_name(env, ids, client, run)  # the endpoint only exists once the service has deployed
     result = wait_log(boot, "JOB_RESULT", 600)
     run.note("bootstrap_done", created=result["created"], state_digest=result["state_digest"], seconds=result["seconds"])
     run.note("deploy", service="cloudflared")

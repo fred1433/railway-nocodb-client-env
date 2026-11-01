@@ -84,6 +84,9 @@ def nocodb_checks():
     marker = rows[0].get("marker") if rows else None
     check("source.marker", E["CLIENT_MARKER"], marker, status == 200 and marker == E["CLIENT_MARKER"],
           "GET /api/v2/tables/{client_marker}/records")
+    version = http("GET", "/api/v1/version", token=token)[1]
+    check("manifest.nocodb_runtime", "version reported by the running service",
+          version.get("currentVersion") if isinstance(version, dict) else str(version)[:80], True, "GET /api/v1/version")
     status, out = http("POST", f"/api/v2/tables/{by_name['accounts']['id']}/records",
                        {"account_no": 9999, "name": "write attempt", "kind": "asset"}, token=token)
     check("readonly.nocodb_write", "write through NocoDB refused", f"HTTP {status} {str(out)[:120]}", 400 <= status < 500,
@@ -101,6 +104,8 @@ def nocodb_checks():
 
 def sql_checks():
     with conn(READER, E["NC_READER_PASSWORD"], CLIENT_DB) as c:
+        check("manifest.postgres_runtime", "version reported by the running server",
+              c.execute("show server_version").fetchone()[0], True, "SHOW server_version")
         marker = c.execute("select marker from client_marker where id=1").fetchone()[0]
         check("readonly.select", E["CLIENT_MARKER"], marker, marker == E["CLIENT_MARKER"], "SELECT marker FROM client_marker")
         state, msg = sqlstate_of(lambda: c.execute("insert into accounts values (9998, 'x', 'asset')"))
