@@ -147,10 +147,10 @@ def cmd_cron(name, run):
     print("next", inst["nextCronRunAt"], flush=True)
     result = wait_end(dep, seconds=480, after=start)
     lines = [l for l in P.logs(dep, 500)]
+    status = P.deployment(dep)["status"]  # read before the redeploy below replaces this deployment
     P.set_instance(sid, env, {"cronSchedule": P.BACKUP_CRON})
     restored = P.deploy(sid, env)
     P.wait_status(restored, ("SUCCESS",))
-    status = P.deployment(dep)["status"]
     data = {"schedule_during_test": "*/5 * * * *", "reference_schedule": P.BACKUP_CRON, "scheduled_for": inst["nextCronRunAt"],
             "container_started": next((l["timestamp"] for l in lines if "Starting Container" in l["message"]), None),
             "deployment_status": status, "result": result}
@@ -223,6 +223,25 @@ def cmd_memory(name, run):
     print(json.dumps(data))
 
 
+def cmd_stop(name, run):
+    client, sec, pid, env, ids = ctx(name)
+    for svc in ("cloudflared", "nocodb", "backup", "postgres"):
+        edges = gql("query($p:String!,$e:String!,$s:String!){deployments(first:1,input:{projectId:$p,environmentId:$e,serviceId:$s}){edges{node{id deploymentStopped}}}}",
+                    {"p": pid, "e": env, "s": ids[svc]})["deployments"]["edges"]
+        if edges and not edges[0]["node"]["deploymentStopped"]:
+            gql("mutation($i:String!){deploymentStop(id:$i)}", {"i": edges[0]["node"]["id"]})
+    print("stopped", name)
+
+
+def cmd_start(name, run):
+    client, sec, pid, env, ids = ctx(name)
+    P.wait_status(P.deploy(ids["postgres"], env), ("SUCCESS",))
+    P.wait_status(P.deploy(ids["nocodb"], env), ("SUCCESS",))
+    P.wait_status(P.deploy(ids["cloudflared"], env), ("SUCCESS",))
+    P.wait_status(P.deploy(ids["backup"], env), ("SUCCESS",))
+    print("started", name)
+
+
 def service_view(pid, env, ids):
     view = {}
     for name, sid in sorted(ids.items()):
@@ -274,13 +293,27 @@ def cmd_audit(run):
                 if left.get(key) != right.get(key):
                     diffs.append({"service": svc, "field": key, "a": left.get(key), "b": right.get(key)})
     images = {n: {s: d["instance"]["source"]["image"] for s, d in v.items()} for n, v in views.items()}
+    runtime, deployed = {}, {}
+    for name in CLIENTS:
+        _, sec, pid, env, ids = ctx(name)
+        dep = gql("query($p:String!,$e:String!,$s:String!){deployments(first:1,input:{projectId:$p,environmentId:$e,serviceId:$s}){edges{node{id}}}}",
+                  {"p": pid, "e": env, "s": ids["cloudflared"]})["deployments"]["edges"][0]["node"]["id"]
+        deployed[name] = {}
+        for svc, sid in ids.items():
+            edges = gql("query($p:String!,$e:String!,$s:String!){deployments(first:1,input:{projectId:$p,environmentId:$e,serviceId:$s}){edges{node{meta}}}}",
+                        {"p": pid, "e": env, "s": sid})["deployments"]["edges"]
+            deployed[name][svc] = (edges[0]["node"].get("meta") or {}).get("imageDigest") if edges else None
+        found = [m.group(1) for m in (re.search(r"[Vv]ersion[ =]([0-9]{4}\.[0-9.]+)", l) for l in log_lines(dep)) if m]
+        runtime[name] = found[0] if found else None
     lock = {k: v["ref"] for k, v in P.load_json("reference/versions.lock.json").items()}
     data = {
         "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "inventory": inventory, "exposed": exposed,
         "fingerprints": fingerprints, "shared_between_clients": shared, "distinct_values": len(set(all_values)), "total_values": len(all_values),
         "manifest": images, "manifest_identical": images["acme-mech"] == images["beacon-hvac"],
         "manifest_matches_lock": all(img in lock.values() for v in images.values() for img in v.values()),
-        "config_diff": diffs, "lock": lock,
+        "config_diff": diffs, "lock": lock, "cloudflared_runtime": runtime, "deployed_digests": deployed,
+        "deployed_identical": deployed["acme-mech"] == deployed["beacon-hvac"],
+        "deployed_match_lock": all(d and any(d in ref for ref in lock.values()) for v in deployed.values() for d in v.values()),
     }
     store(out_path(run, "audit.json"), data)
     print(json.dumps({k: data[k] for k in ("exposed", "shared_between_clients", "distinct_values", "total_values", "manifest_identical", "manifest_matches_lock", "config_diff")})[:900])
@@ -292,7 +325,7 @@ if __name__ == "__main__":
     ap.add_argument("client", nargs="?")
     ap.add_argument("--run", default="20261101")
     args = ap.parse_args()
-    funcs = {"checks": cmd_checks, "outside": cmd_outside, "replay": cmd_replay, "cron": cmd_cron, "restore": cmd_restore, "memory": cmd_memory}
+    funcs = {"checks": cmd_checks, "outside": cmd_outside, "replay": cmd_replay, "cron": cmd_cron, "restore": cmd_restore, "memory": cmd_memory, "stop": cmd_stop, "start": cmd_start}
     if args.command == "audit":
         cmd_audit(args.run)
     else:
