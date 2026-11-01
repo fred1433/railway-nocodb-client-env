@@ -9,7 +9,7 @@
     "ref": "cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba"
   },
   "ops": {
-    "ref": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:51338b100ef683bd6b11a5c2a11f20f4607c9e1a4df921f32a3a71955abc97bd",
-    "commit": "02f76ee67a10f84657a1982d50f0895c0798ae7a"
+    "ref": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+    "commit": "19a397ecfd51c53a97b4d7ce2c79b7351bc5c4d3"
   }
 }
