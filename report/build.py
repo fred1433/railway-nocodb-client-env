@@ -218,7 +218,7 @@ second = outside(A, "web.second_login")
 notes = [
     "Private tunnel rather than a public Railway domain: a second public path would go around Access.",
     f"Access in front of NocoDB Community leaves a second login: a token that passes Access still gets HTTP {http_code(second['observed'])} from NocoDB.",
-    "Since 9 January 2026 the NocoDB license separates internal self-hosting from direct access for external customers. Wording to read on the official page. The question is who uses NocoDB, and who owns the instances.",
+    'Since 9 January 2026 the <a href="https://nocodb.com/docs/product-docs/getting-started/license">NocoDB license</a> reads: "Internal self-hosting does not require a commercial license", while a commercial license is needed to "Provide direct NocoDB access to external customers". The question is who uses NocoDB, and who owns the instances.',
     "QuickBooks OAuth redirects and webhooks do not go through an interactive login, and Intuit signs its webhooks. They need their own route.",
     "Read-only NocoDB is a choice for this example, not a rule of the setup. Edits would need a role with write grants.",
     "On NocoDB 2026.10.1, NC_INVITE_ONLY_SIGNUP=true left sign-up open on the first run (HTTP 200). The bootstrap now sets the admin setting and checks it before the tunnel starts.",
@@ -226,14 +226,16 @@ notes = [
     "Railway cron schedules are in UTC, so the local time of a backup moves with daylight saving.",
     "Outside this example: real QuickBooks, a GitHub organization per client, n8n.",
 ]
-date = dt.datetime.strptime(RUN, "%Y%m%d").strftime("%-d %B %Y")
+first = dt.datetime.strptime(RUN, "%Y%m%d")
+last = dt.datetime.strptime(audit["at"][:10], "%Y-%m-%d") if audit["at"][:2] == "20" else first
+date = first.strftime("%-d %B %Y") if first.date() == last.date() else f"{first.strftime('%-d')} to {last.strftime('%-d %B %Y')}"
 lock = audit["lock"]
 commit = subprocess.check_output(["git", "-C", ROOT, "log", "-1", "--format=%h", "--", "reference/versions.lock.json"], text=True).strip()
 if teardown:
     gone = dt.datetime.strptime(teardown["date"], "%Y-%m-%d").strftime("%-d %B %Y")
-    after = f"Both environments were removed after the run, on {gone}; this page is the record."
+    after = f"Removed after the run, on {gone}"
 else:
-    after = "Both environments stay up only for the length of the run."
+    after = "Up for the length of the run"
 values = {
     "date": e(date), "commit": e(commit), "commit_url": f"{REPO}/tree/{commit}",
     "v_postgres": e(first_word(inside(A, "manifest.postgres_runtime")["observed"])),
@@ -241,7 +243,7 @@ values = {
     "v_cloudflared": e(audit["cloudflared_runtime"][A] or re.search(r":([0-9.]+)@", lock["cloudflared"]).group(1)),
     "findings": "\n    ".join(f'<p class="finding">{e(f)}</p>' for f in findings),
     "rows": "\n".join(rows_html),
-    "notes": "\n      ".join(f"<li>{e(n)}</li>" for n in notes),
+    "notes": "\n      ".join(f"<li>{n if n.startswith('Since 9 January') else e(n)}</li>" for n in notes),
     "teardown": e(after), "repo_url": REPO,
 }
 with open(os.path.join(ROOT, "report/template.html")) as fh:

@@ -74,7 +74,7 @@ button {
 
 .row-head, .row > summary {
   display: grid;
-  grid-template-columns: 62px minmax(0, 1.28fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: calc(var(--gutter) + 40px) minmax(0, 1.28fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 .row-head { border-top: 2px solid var(--form); border-bottom: 1px solid var(--form); color: var(--form); font: 500 14px/1.2 "Barlow Semi Condensed", sans-serif; }
 .row-head span { padding: 7px 14px; border-left: 1px solid var(--form); }
@@ -89,7 +89,7 @@ button {
 .num { border-left: 0; padding-left: var(--gutter); padding-right: 0; color: var(--form); font: 600 19px/1.3 "Barlow Semi Condensed", sans-serif; }
 .what h3 { margin: 0; color: var(--form); font: 600 20px/1.2 "Barlow Semi Condensed", sans-serif; }
 .what p { margin-top: 3px; color: var(--form); font-size: 15.5px; line-height: 1.34; }
-.what .open { display: inline-block; margin-top: 6px; color: var(--form-soft); font: 500 14px/1.2 "Barlow Semi Condensed", sans-serif; }
+.what .open { display: inline-block; margin-top: 7px; color: var(--form); font: 500 14px/1.2 "Barlow Semi Condensed", sans-serif; border-bottom: 1px solid var(--form-soft); }
 .row[open] .what .open::after { content: " (close)"; }
 .cell { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 6px; align-items: start; font-size: 15.5px; line-height: 1.34; font-weight: 500; }
 .cell svg { width: 24px; height: 22px; margin-top: -1px; color: var(--entry); }
@@ -103,6 +103,8 @@ button {
 .ev { padding: 7px 0 9px; border-top: 1px solid var(--grid); font-size: 14.5px; line-height: 1.35; }
 .ev:first-of-type { border-top: 0; padding-top: 0; }
 .ev .req { color: var(--form); }
+.ev .req::before { content: "Required: "; font-weight: 500; }
+.ev .obs::before { content: "Recorded: "; font-weight: 400; }
 .ev .obs { font-weight: 500; overflow-wrap: anywhere; }
 .ev code, .ev pre { font: 400 12.5px/1.45 "IBM Plex Mono", Menlo, monospace; color: var(--form); }
 .ev code { display: block; margin-top: 2px; overflow-wrap: anywhere; }
@@ -112,7 +114,8 @@ button {
 .notes ol { margin-top: 14px; columns: 2; column-gap: 40px; list-style: none; counter-reset: note; }
 .notes li { break-inside: avoid; counter-increment: note; position: relative; padding: 0 0 12px 26px; font-size: 15.5px; line-height: 1.38; }
 .notes li::before { content: counter(note); position: absolute; left: 0; top: 0; color: var(--form); font: 600 17px/1.3 "Barlow Semi Condensed", sans-serif; }
-.after { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--form); font-weight: 500; }
+.notes { padding-bottom: 22px; }
+.closing { grid-template-columns: 1fr 1fr 1.4fr; border-bottom: 0; }
 
 footer {
   display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
@@ -123,21 +126,24 @@ footer {
 }
 
 @media (max-width: 1000px) {
-  .fields { grid-template-columns: repeat(3, 1fr); }
-  .fields > div:nth-child(4) { border-left: 0; padding-left: var(--gutter); }
-  .fields > div:nth-child(n+4) { border-top: 1px solid var(--form); }
+  .fields:not(.closing) { grid-template-columns: repeat(3, 1fr); }
+  .fields:not(.closing) > div:nth-child(4) { border-left: 0; padding-left: var(--gutter); }
+  .fields:not(.closing) > div:nth-child(n+4) { border-top: 1px solid var(--form); }
   .notes ol { columns: 1; }
 }
 @media (max-width: 720px) {
   body { padding: 0; font-size: 16px; }
   .sheet { border-width: 0 0 2px; outline: 0; }
-  .fields { grid-template-columns: 1fr 1fr; }
-  .fields > div, .fields > div:first-child { border-left: 0; padding-left: var(--gutter); padding-right: 8px; border-top: 1px solid var(--form); }
-  .fields > div:nth-child(-n+1) { grid-column: 1 / -1; border-top: 0; }
-  .fields > div:nth-child(even) { padding-left: 0; }
-  .fields > div:nth-child(2n+3) { padding-left: 0; }
-  .fields > div:nth-child(even) { padding-left: var(--gutter); }
-  .fields > div:nth-child(odd):not(:first-child) { padding-left: 12px; border-left: 1px solid var(--form); }
+  .fields { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .fields > div { padding: 8px 10px 9px; border-top: 1px solid var(--form); border-left: 1px solid var(--form); }
+  .fields > div:first-child { grid-column: span 6; border-top: 0; border-left: 0; }
+  .fields > div:nth-child(2) { grid-column: span 3; border-left: 0; padding-left: var(--gutter); }
+  .fields > div:nth-child(3) { grid-column: span 3; }
+  .fields > div:nth-child(n+4) { grid-column: span 2; }
+  .fields > div:nth-child(4) { border-left: 0; padding-left: var(--gutter); }
+  .closing { grid-template-columns: 1fr; }
+  .closing > div, .closing > div:first-child, .closing > div:nth-child(2), .closing > div:nth-child(3) { grid-column: auto; border-left: 0; padding-left: var(--gutter); border-top: 1px solid var(--form); }
+  .closing > div:first-child { border-top: 0; }
   .findings { grid-template-columns: 1fr; }
   .finding, .finding:first-child { padding: 14px var(--gutter) 16px; border-left: 0; border-top: 1px solid var(--form); }
   .finding:first-child { border-top: 0; }
