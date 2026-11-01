@@ -1,0 +1,11 @@
+[
+ {
+  "attempt": 1,
+  "started": "2026-11-01T15:38:03Z",
+  "ended": "2026-11-01T15:38:16Z",
+  "commit": "ef83d3c",
+  "exit_code": 1,
+  "stopped_by": "You've hit the service creation limit for new accounts (25 services per day).",
+  "reference_changed_after": false
+ }
+]
