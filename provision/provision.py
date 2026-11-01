@@ -135,7 +135,8 @@ def sink_url(acct):
 # Railway ------------------------------------------------------------------------------------------
 
 def ensure_project(client, run):
-    projects = gql("query{projects{edges{node{id name environments{edges{node{id name}}}}}}}")["projects"]["edges"]
+    # The workspace argument matters: without it the API answers an empty list, and every run would create a new project.
+    projects = gql("query($w:String!){projects(workspaceId:$w){edges{node{id name environments{edges{node{id name}}}}}}}", {"w": WS})["projects"]["edges"]
     node = next((e["node"] for e in projects if e["node"]["name"] == client["project"]), None)
     if not node:
         node = gql("mutation($i:ProjectCreateInput!){projectCreate(input:$i){id name environments{edges{node{id name}}}}}",

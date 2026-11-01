@@ -12,4 +12,8 @@ job = os.environ.get("OPS_JOB", "")
 if job not in JOBS:
     sys.exit(f"OPS_JOB must be one of {sorted(JOBS)}, got {job!r}")
 sys.path.insert(0, "/app/ops")
-runpy.run_path(JOBS[job], run_name="__main__")
+try:
+    runpy.run_path(JOBS[job], run_name="__main__")
+except Exception as exc:  # type only: a subprocess error text can carry its command line, and so a token
+    print('JOB_RESULT {"ok": false, "stage": "unhandled", "detail": "%s"}' % type(exc).__name__, flush=True)
+    sys.exit(1)

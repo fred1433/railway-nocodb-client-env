@@ -206,6 +206,8 @@ def cmd_restore(name, run):
             "image_nocodb": lock["nocodb"], "image_postgres": lock["postgres"]}
     store(out_path(run, name, "restore.json"), data)
     print(json.dumps(data)[:800])
+    if not verified.get("ok"):
+        sys.exit("restore not verified: project kept for inspection")
     gql("mutation($i:String!){projectDelete(id:$i)}", {"i": pid})
     print("restore project deleted", flush=True)
 

@@ -44,7 +44,9 @@ Generated secrets stay in `.secrets/<client>.json`, which is git-ignored. Keep t
 
 - The private endpoint of a service exists only after its first deployment, so it is renamed after that.
 - `NC_INVITE_ONLY_SIGNUP=true` left sign-up open on NocoDB 2026.10.1. The bootstrap now sets the admin setting and checks it before the tunnel starts.
-- A volume added to a running service redeploys it, so the volume is created before the image is set.
+- Creating the volume after the image started a second deployment on the same volume, so the volume now comes first.
+- The Railway `projects` query needs the workspace argument: without it the list came back empty, each run created a new project, and that used up the daily service quota.
+- `pg_dump` does not carry database-level grants, so the restore job applies them again.
 
 ## Railway limit met during the run
 

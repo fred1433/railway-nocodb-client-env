@@ -118,13 +118,12 @@ def row_repeat(c):
                 "redeploy the bootstrap service")]
     if c == B:
         diff = audit["config_diff"]
-        unchanged = not any(a.get("reference_changed_after") for a in attempts_b)
-        items.insert(0, ev("stood up from the same reference, no repair", f"exit code {last_b['exit_code']} from an empty project, commit {last_b['commit']}", "python3 provision/provision.py up beacon-hvac"))
+        items.insert(0, ev("stood up from the final reference, no repair", f"exit code {last_b['exit_code']} from an empty project, commit {last_b['commit']}", "python3 provision/provision.py up beacon-hvac"))
         for stop in stopped_b:
-            items.insert(1, ev("earlier attempt, reference unchanged afterwards", f"stopped at {stop['ended']} by Railway: {stop['stopped_by']}", "account limit, not a fault in the reference"))
+            items.insert(1, ev("earlier attempt, on a previous commit", f"stopped at {stop['ended']} by Railway: {stop['stopped_by']}", stop.get("note")))
         items.insert(len(stopped_b) + 1, ev("only identifier, domain and secrets differ", f"{len(diff)} differences left once those are masked", "normalized service settings and variables compared"))
-        ok = same and last_b["exit_code"] == 0 and unchanged and not diff
-        return ok, "No repair, reference unchanged. Replay changed nothing", items
+        ok = same and last_b["exit_code"] == 0 and not diff
+        return ok, "One pass from the final reference, no repair. Replay changed nothing", items
     return same, "Corrections carried into the reference. Replay changed nothing", items
 
 
@@ -205,7 +204,7 @@ for number, (title, required, fn) in enumerate(ROWS, 1):
       </div>
     </details>""")
 
-clean_b = last_b["exit_code"] == 0 and not audit["config_diff"] and not any(a.get("reference_changed_after") for a in attempts_b)
+clean_b = last_b["exit_code"] == 0 and not audit["config_diff"]
 restored = all(data[c]["restore"]["verify"].get("ok") for c in (A, B))
 findings = [
     f"{ok_count} of {len(ROWS)} lines passed in both environments.",

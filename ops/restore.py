@@ -42,6 +42,12 @@ with tempfile.TemporaryDirectory() as tmp:
                               env=env, capture_output=True, text=True)
         if done.returncode:
             die("pg_restore_" + db, done.stderr.strip()[-250:])
+    with connect("owner", E["POSTGRES_PASSWORD"], "postgres") as conn:
+        # pg_dump keeps schema and table grants, not database-level ones: a new database starts open to PUBLIC.
+        for db in ("client_data", "nocodb_meta"):
+            conn.execute(sql.SQL("REVOKE ALL ON DATABASE {} FROM PUBLIC").format(sql.Identifier(db)))
+        conn.execute("GRANT CONNECT ON DATABASE client_data TO nocodb_reader, backup_runner")
+        conn.execute("GRANT CONNECT ON DATABASE nocodb_meta TO backup_runner")
     with connect("owner", E["POSTGRES_PASSWORD"], "client_data") as conn:
         marker = conn.execute("select marker from client_marker where id=1").fetchone()[0]
 emit("JOB_RESULT", ok=True, job="restore", key=key, backup_stamp=manifest["stamp"], marker_sql=marker)
