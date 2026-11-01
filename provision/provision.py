@@ -236,6 +236,8 @@ def ensure_services(pid, env, spec, run):
             ids[name] = gql("mutation($i:ServiceCreateInput!){serviceCreate(input:$i){id}}",
                             {"i": {"projectId": pid, "environmentId": env, "name": name}})["serviceCreate"]["id"]
             run.note("service_created", name=name)
+        if name == "postgres":
+            ensure_volume(pid, env, ids, run)  # before the image: a volume added later redeploys a running database
         set_vars(pid, env, ids[name], spec[name]["variables"])
         set_instance(ids[name], env, {"source": {"image": spec[name]["image"]}, **spec[name]["settings"]})
     return ids
@@ -274,7 +276,6 @@ def up(client, run):
     save_secrets(sec, path)
     spec = desired(client, sec, lock, sink_url(acct))
     ids = ensure_services(pid, env, spec, run)
-    ensure_volume(pid, env, ids, run)
     ensure_tunnel_route(acct, zone, client, sec, run)
 
     run.note("deploy", service="postgres")

@@ -97,8 +97,9 @@ def nocodb_checks():
     status, out = http("POST", "/api/v1/auth/user/signup", {"email": email, "password": "Aa1!" + "probe-signup-attempt"})
     users_after = http("GET", "/api/v1/users?limit=100", token=token)
     after = users_after[1]["pageInfo"]["totalRows"] if users_after[0] == 200 else None
+    said = (out.get("msg") or "")[:48] if isinstance(out, dict) else str(out)[:48]
     check("signup.anonymous", "anonymous sign-up rejected, user count unchanged",
-          f"HTTP {status} {str(out)[:120]}; users {before} -> {after}",
+          f"HTTP {status} {said}; users {before} -> {after}",
           400 <= status < 500 and before == after and before is not None, "POST /api/v1/auth/user/signup")
 
 
@@ -112,8 +113,12 @@ def sql_checks():
         check("readonly.insert", "42501", f"{state} {msg}", state == "42501", "INSERT INTO accounts")
         state, msg = sqlstate_of(lambda: c.execute("create temp table t_probe(x int)"))
         check("readonly.temp", "42501", f"{state} {msg}", state == "42501", "CREATE TEMP TABLE")
-    state, msg = sqlstate_of(lambda: conn(READER, E["NC_READER_PASSWORD"], META_DB).close())
-    check("readonly.meta", "42501", f"{state} {msg}", state == "42501", f"connect as {READER} to {META_DB}")
+    try:
+        conn(READER, E["NC_READER_PASSWORD"], META_DB).close()
+        refused = "connected"
+    except psycopg.OperationalError as exc:  # libpq gives no SQLSTATE on a failed connection, so the server text is the evidence
+        refused = "FATAL" + str(exc).split("FATAL", 1)[-1].splitlines()[0][:100]
+    check("readonly.meta", "connection refused by the server", refused, "permission denied for database" in refused, f"connect as {READER} to {META_DB}")
     name = f"future_probe_{int(time.time())}"
     with conn(LOADER, E["LOADER_PASSWORD"], CLIENT_DB) as load:
         load.execute(f"create table {name} (id int primary key, note text)")

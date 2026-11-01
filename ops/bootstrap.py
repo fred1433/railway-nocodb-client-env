@@ -57,10 +57,23 @@ def seed():
         conn.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO nocodb_reader")
 
 
+def close_signup(nc):
+    """NC_INVITE_ONLY_SIGNUP=true left sign-up open on 2026.10.1: the admin setting is what the server reads.
+    This runs before cloudflared is deployed, so the instance is never reachable with sign-up open."""
+    settings = nc.ok("GET", "/api/v1/app-settings")
+    if not settings.get("invite_only_signup"):
+        settings["invite_only_signup"] = True
+        nc.ok("POST", "/api/v1/app-settings", settings)
+        created.append("nocodb:invite_only_signup")
+    if not nc.ok("GET", "/api/v1/meta/nocodb/info").get("inviteOnlySignup"):
+        die("nocodb_signup", "invite-only sign-up is still off after setting it")
+
+
 def ensure_nocodb():
     nc = NocoDB(E["NOCODB_URL"])
     nc.wait_ready()
     nc.signin(E["NC_ADMIN_EMAIL"], E["NC_ADMIN_PASSWORD"])
+    close_signup(nc)
     bases = nc.ok("GET", "/api/v2/meta/bases")["list"]
     base = next((b for b in bases if b["title"] == "client_data"), None)
     if not base:

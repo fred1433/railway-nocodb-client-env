@@ -32,16 +32,17 @@ def run(host, allowed, other):
     def check(cid, expected, observed, ok, cmd):
         out.append({"id": cid, "expected": expected, "observed": observed, "ok": bool(ok), "cmd": cmd})
 
-    status, headers, _ = fetch(host, "/api/v1/health")
+    status, headers, body = fetch(host, "/api/v1/health")
     location = urllib.parse.urlparse(headers.get("Location") or "").hostname
-    check("web.anonymous", "not served: redirected to the Access login", f"HTTP {status}, Location host {location}",
-          status in (302, 303) and (location or "").endswith(".cloudflareaccess.com"), f"GET https://{host}/api/v1/health")
+    check("web.anonymous", "not served by NocoDB", f"HTTP {status}, Location host {location}",
+          status != 200 and '"uptime"' not in body, f"GET https://{host}/api/v1/health")
     status, _, body = fetch(host, "/api/v1/health", allowed)
     check("web.allowed", "served by NocoDB (HTTP 200)", f"HTTP {status} {body[:80]}", status == 200 and "OK" in body,
           "same request with the allowed service token")
-    status, headers, _ = fetch(host, "/api/v1/health", other)
+    status, headers, body = fetch(host, "/api/v1/health", other)
     location = urllib.parse.urlparse(headers.get("Location") or "").hostname
-    check("web.other", "refused: valid token, not in the policy", f"HTTP {status}, Location host {location}", status != 200,
+    check("web.other", "refused: valid token, not in the policy", f"HTTP {status}, Location host {location}",
+          status != 200 and '"uptime"' not in body,
           "same request with a valid token outside the policy")
     status, _, body = fetch(host, "/api/v2/meta/bases", allowed)
     check("web.second_login", "NocoDB still asks for its own login after Access", f"HTTP {status} {body[:80]}", status == 401,

@@ -192,9 +192,10 @@ def cmd_restore(name, run):
     for svc, (image, variables, settings) in spec.items():
         if svc not in ids:
             ids[svc] = gql("mutation($i:ServiceCreateInput!){serviceCreate(input:$i){id}}", {"i": {"projectId": pid, "environmentId": env, "name": svc}})["serviceCreate"]["id"]
+        if svc == "postgres":
+            P.ensure_volume(pid, env, ids, base_run)
         P.set_vars(pid, env, ids[svc], variables)
         P.set_instance(ids[svc], env, {"source": {"image": image}, "sleepApplication": False, **settings})
-    P.ensure_volume(pid, env, ids, base_run)
     P.wait_status(P.deploy(ids["postgres"], env), ("SUCCESS",))
     restored = wait_end(P.deploy(ids["restore"], env))
     if not restored.get("ok"):
