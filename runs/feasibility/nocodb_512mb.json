@@ -1,0 +1,260 @@
+{
+ "what": "Railway feasibility test of 1 November 2026: can NocoDB 2026.10.1 (pinned digest) start under the Free plan's per-service memory limit? Selected records copied from the raw outputs of that test, with project, environment and deployment identifiers removed.",
+ "plan_during_test": "Free",
+ "memory_limit_gb": 0.512,
+ "attempts": [
+  {
+   "heap": "default",
+   "postgres": "not running",
+   "outcome": "inconclusive: Postgres was not running",
+   "nocodb_memory_gb_max": 0.21
+  },
+  {
+   "heap": "--max-old-space-size=384",
+   "postgres": "awake",
+   "outcome": "CRASHED",
+   "nocodb_memory_gb_max": 0.485
+  },
+  {
+   "heap": "--max-old-space-size=448",
+   "postgres": "asleep",
+   "outcome": "CRASHED, process Killed in a loop",
+   "nocodb_memory_gb_max": 0.499
+  }
+ ],
+ "started_under_limit": false,
+ "records": {
+  "steps": [
+   {
+    "t": "2026-11-01T13:27:55Z",
+    "step": "cloudflared_command",
+    "ok": false,
+    "error": "Free plan services must have \"sleepApplication\" set to \"true\" unless they have a cron schedule."
+   },
+   {
+    "t": "2026-11-01T13:27:57Z",
+    "step": "service_4_attempt",
+    "ok": false,
+    "error": "Free plan resource provision limit exceeded. Please upgrade to provision more resources!"
+   },
+   {
+    "t": "2026-11-01T13:28:42Z",
+    "step": "project_2_retry",
+    "ok": false,
+    "error": "Free plan resource provision limit exceeded. Please upgrade to provision more resources!"
+   },
+   {
+    "t": "2026-11-01T13:28:43Z",
+    "step": "cloudflared_command",
+    "ok": true,
+    "sleep": true
+   },
+   {
+    "t": "2026-11-01T13:29:57Z",
+    "step": "nocodb_heap",
+    "node_options": "--max-old-space-size=384"
+   },
+   {
+    "t": "2026-11-01T13:33:24Z",
+    "step": "postgres_state",
+    "status": "SUCCESS",
+    "since": "2026-11-01T13:29:55.191Z"
+   },
+   {
+    "t": "2026-11-01T13:37:27Z",
+    "step": "postgres_state",
+    "status": "SLEEPING",
+    "since": "2026-11-01T13:37:07.665Z"
+   },
+   {
+    "t": "2026-11-01T13:37:29Z",
+    "step": "nocodb_heap_448"
+   },
+   {
+    "t": "2026-11-01T13:37:29Z",
+    "step": "states",
+    "nocodb": "INITIALIZING",
+    "postgres": "SLEEPING"
+   },
+   {
+    "t": "2026-11-01T13:37:36Z",
+    "step": "states",
+    "nocodb": "DEPLOYING",
+    "postgres": "SLEEPING"
+   },
+   {
+    "t": "2026-11-01T13:37:42Z",
+    "step": "states",
+    "nocodb": "SUCCESS",
+    "postgres": "SLEEPING"
+   },
+   {
+    "t": "2026-11-01T13:38:15Z",
+    "step": "states",
+    "nocodb": "CRASHED",
+    "postgres": "SLEEPING"
+   },
+   {
+    "t": "2026-11-01T13:38:22Z",
+    "step": "states",
+    "nocodb": "SUCCESS",
+    "postgres": "SLEEPING"
+   },
+   {
+    "t": "2026-11-01T13:39:54Z",
+    "step": "states",
+    "nocodb": "CRASHED",
+    "postgres": "SLEEPING"
+   }
+  ],
+  "memory_snapshots": [
+   {
+    "t": "2026-11-01T13:29:08Z",
+    "nocodb_status": "SUCCESS",
+    "nocodb_memory_gb_max": 0.21,
+    "nocodb_memory_limit_gb": 0.512
+   },
+   {
+    "t": "2026-11-01T13:30:02Z",
+    "nocodb_status": "DEPLOYING",
+    "nocodb_memory_gb_max": 0.306,
+    "nocodb_memory_limit_gb": 0.512
+   },
+   {
+    "t": "2026-11-01T13:32:45Z",
+    "nocodb_status": "CRASHED",
+    "nocodb_memory_gb_max": 0.485,
+    "nocodb_memory_limit_gb": 0.512
+   },
+   {
+    "t": "2026-11-01T13:40:05Z",
+    "nocodb_status": "CRASHED",
+    "nocodb_memory_gb_max": 0.499,
+    "nocodb_memory_limit_gb": 0.512
+   }
+  ],
+  "nocodb_log_killed_at": [
+   "2026-11-01T13:37:59.986296646Z",
+   "2026-11-01T13:38:02.609891505Z",
+   "2026-11-01T13:38:23.344989099Z",
+   "2026-11-01T13:38:25.993854451Z",
+   "2026-11-01T13:38:46.740780959Z",
+   "2026-11-01T13:38:50.985270129Z",
+   "2026-11-01T13:39:11.930741865Z",
+   "2026-11-01T13:39:13.657221705Z",
+   "2026-11-01T13:39:34.103956262Z",
+   "2026-11-01T13:39:35.648821858Z",
+   "2026-11-01T13:39:56.567656007Z"
+  ]
+ },
+ "same_image_on_a_larger_limit": {
+  "plan": "Hobby",
+  "records": [
+   {
+    "t": "2026-11-01T15:13:40Z",
+    "step": "deploy_nocodb",
+    "heap": "default"
+   },
+   {
+    "t": "2026-11-01T15:21:14Z",
+    "step": "deploy_nocodb",
+    "heap": "default"
+   },
+   {
+    "t": "2026-11-01T15:25:14Z",
+    "step": "nocodb_status",
+    "status": "SUCCESS"
+   },
+   {
+    "t": "2026-11-01T15:25:15Z",
+    "step": "metric",
+    "name": "MEMORY_USAGE_GB",
+    "series": [
+     [
+      "15:21:00",
+      0
+     ],
+     [
+      "15:21:30",
+      0.883
+     ],
+     [
+      "15:22:00",
+      0.883
+     ],
+     [
+      "15:22:30",
+      0.882
+     ],
+     [
+      "15:23:00",
+      0.882
+     ],
+     [
+      "15:23:30",
+      0.65
+     ],
+     [
+      "15:24:00",
+      0.651
+     ],
+     [
+      "15:24:30",
+      0.651
+     ],
+     [
+      "15:25:00",
+      0.651
+     ]
+    ],
+    "max": 0.883,
+    "last": 0.651
+   },
+   {
+    "t": "2026-11-01T15:25:15Z",
+    "step": "metric",
+    "name": "MEMORY_LIMIT_GB",
+    "series": [
+     [
+      "15:21:00",
+      0
+     ],
+     [
+      "15:21:30",
+      8
+     ],
+     [
+      "15:22:00",
+      8
+     ],
+     [
+      "15:22:30",
+      8
+     ],
+     [
+      "15:23:00",
+      8
+     ],
+     [
+      "15:23:30",
+      8
+     ],
+     [
+      "15:24:00",
+      8
+     ],
+     [
+      "15:24:30",
+      8
+     ],
+     [
+      "15:25:00",
+      8
+     ]
+    ],
+    "max": 8,
+    "last": 8
+   }
+  ]
+ }
+}

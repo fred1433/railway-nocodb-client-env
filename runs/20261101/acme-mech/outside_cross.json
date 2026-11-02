@@ -1,0 +1,36 @@
+{
+ "at": "2026-11-02T16:29:06Z",
+ "checks": [
+  {
+   "cmd": "GET https://railway-check-a.theaipipe.com/api/v1/health, no token",
+   "expected": "refused by Access",
+   "id": "web.anonymous",
+   "observed": "HTTP 403, refused by Cloudflare Access",
+   "ok": true
+  },
+  {
+   "cmd": "same request with this client's service token, NocoDB stopped",
+   "expected": "this client's service token passes Access (NocoDB stopped, so the tunnel origin is down)",
+   "id": "web.allowed",
+   "observed": "HTTP 530, passed Access, Cloudflare reports the tunnel origin down (error code: 1033)",
+   "ok": true
+  },
+  {
+   "cmd": "same request with the other client's service token",
+   "expected": "the other client's valid service token is refused by Access",
+   "id": "web.peer",
+   "observed": "HTTP 403, refused by Cloudflare Access",
+   "ok": true
+  },
+  {
+   "cmd": "same request with a token that belongs to no policy",
+   "expected": "a token in no policy is refused by Access (same answer as an invalid token)",
+   "id": "web.other",
+   "observed": "HTTP 403, refused by Cloudflare Access",
+   "ok": true
+  }
+ ],
+ "origin_running": false,
+ "peer_token_from": "beacon-hvac",
+ "run": "20261101"
+}

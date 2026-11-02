@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Railway setup check</title>
-<meta name="description" content="Two fictional client environments created from the same reference, checked on Railway, then removed.">
+<meta name="description" content="Two fictional client environments created from the same reference, checked on Railway, then stopped.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,20 +20,22 @@
     <p class="scope">Two fictional environments, <b>acme-mech</b> and <b>beacon-hvac</b>, created from the same reference.</p>
   </header>
 
+  <section class="findings" aria-label="Results">
+    <p class="finding">All 11 checks passed in both environments.</p>
+    <p class="finding">The second deployment completed without manual fixes.</p>
+    <p class="finding">A backup of each environment, restored into a new project, was read back through NocoDB.</p>
+  </section>
+  <p class="adapt">The setup and checks can be adapted to an existing client template.</p>
+
   <dl class="fields">
     <div><dt>Executed by</dt><dd>Frederic de Lavenne de Choulot</dd></div>
     <div><dt>Date</dt><dd>1 to 2 November 2026</dd></div>
-    <div><dt>Versions lock</dt><dd><a href="https://github.com/fred1433/railway-nocodb-client-env/tree/6f66d21">6f66d21</a></dd></div>
+    <div class="wide"><dt>Version manifest</dt><dd><a href="https://github.com/fred1433/railway-nocodb-client-env/blob/6f66d21/reference/versions.lock.json">6f66d21</a> <span class="aside">beacon-hvac was stood up from 1bc94a8, which carries this manifest unchanged.</span></dd></div>
     <div><dt>Postgres</dt><dd>18.6</dd></div>
     <div><dt>NocoDB</dt><dd>2026.10.1</dd></div>
     <div><dt>cloudflared</dt><dd>2026.10.7</dd></div>
   </dl>
-
-  <section class="findings" aria-label="Results">
-    <p class="finding">11 of 11 lines passed in both environments.</p>
-    <p class="finding">beacon-hvac came up with no repair. Only identifier, domain and secrets differ.</p>
-    <p class="finding">A backup of each environment, restored into a new project, was read back through NocoDB.</p>
-  </section>
+  <p class="provenance">Results from the runs of 1 and 2 November 2026 (commit 1bc94a8). Scripts hardened afterwards (commit 34576cd), tested locally; not re-run on Railway. The cross-client Access check (line 5) and the backup sink concurrency check (line 10) ran after the environments were stopped, at 2026-11-02 16:29 UTC and 2026-11-02 16:37 UTC, with the hardened scripts.</p>
 
   <section class="checks" aria-label="Checks">
     <div class="checks-head">
@@ -46,13 +48,13 @@
     <details class="row">
       <summary>
         <span class="num">1</span>
-        <span class="what"><h3>Right source</h3><p>The expected tables and this client&#x27;s witness row are seen in NocoDB.</p><span class="open">Evidence</span></span>
-        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>3 tables and the witness row seen in NocoDB</span></span>
-        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>3 tables and the witness row seen in NocoDB</span></span>
+        <span class="what"><h3>Right source</h3><p>The expected tables and this client&#x27;s test record are seen in NocoDB.</p><span class="open">Evidence</span></span>
+        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>3 tables and the client-specific test record seen in NocoDB</span></span>
+        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>3 tables and the client-specific test record seen in NocoDB</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">[&quot;accounts&quot;, &quot;client_marker&quot;, &quot;monthly_close&quot;]</div><div class="obs">[&quot;accounts&quot;, &quot;client_marker&quot;, &quot;monthly_close&quot;]</div><code>GET /api/v2/meta/bases/{base}/tables</code></div><div class="ev"><div class="req">acme-mech witness row 0001</div><div class="obs">acme-mech witness row 0001</div><code>GET /api/v2/tables/{client_marker}/records</code></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">[&quot;accounts&quot;, &quot;client_marker&quot;, &quot;monthly_close&quot;]</div><div class="obs">[&quot;accounts&quot;, &quot;client_marker&quot;, &quot;monthly_close&quot;]</div><code>GET /api/v2/meta/bases/{base}/tables</code></div><div class="ev"><div class="req">beacon-hvac witness row 0001</div><div class="obs">beacon-hvac witness row 0001</div><code>GET /api/v2/tables/{client_marker}/records</code></div></div>
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">accounts, client_marker, monthly_close</div><div class="obs">accounts, client_marker, monthly_close</div><code>GET /api/v2/meta/bases/{base}/tables</code></div><div class="ev"><div class="req">client-specific test record</div><div class="obs">acme-mech witness row 0001</div><code>GET /api/v2/tables/{client_marker}/records</code></div></div>
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">accounts, client_marker, monthly_close</div><div class="obs">accounts, client_marker, monthly_close</div><code>GET /api/v2/meta/bases/{base}/tables</code></div><div class="ev"><div class="req">client-specific test record</div><div class="obs">beacon-hvac witness row 0001</div><code>GET /api/v2/tables/{client_marker}/records</code></div></div>
       </div>
     </details>
 <details class="row">
@@ -63,8 +65,8 @@
         <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>Read accepted. Write 42501, temp table 42501, nocodb_meta refused, write through NocoDB HTTP 403</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">acme-mech witness row 0001</div><div class="obs">acme-mech witness row 0001</div><code>SELECT marker FROM client_marker</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied for table accounts</div><code>INSERT INTO accounts</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied to create temporary tables in database &quot;client_data&quot;</div><code>CREATE TEMP TABLE</code></div><div class="ev"><div class="req">connection refused by the server</div><div class="obs">FATAL:  permission denied for database &quot;nocodb_meta&quot;</div><code>connect as nocodb_reader to nocodb_meta</code></div><div class="ev"><div class="req">write through NocoDB refused</div><div class="obs">HTTP 403 {&#x27;error&#x27;: &#x27;ERR_FORBIDDEN&#x27;, &#x27;message&#x27;: &quot;Forbidden - Source &#x27;client_data_ro&#x27; is read-only&quot;}</div><code>POST /api/v2/tables/{accounts}/records</code></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">beacon-hvac witness row 0001</div><div class="obs">beacon-hvac witness row 0001</div><code>SELECT marker FROM client_marker</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied for table accounts</div><code>INSERT INTO accounts</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied to create temporary tables in database &quot;client_data&quot;</div><code>CREATE TEMP TABLE</code></div><div class="ev"><div class="req">connection refused by the server</div><div class="obs">FATAL:  permission denied for database &quot;nocodb_meta&quot;</div><code>connect as nocodb_reader to nocodb_meta</code></div><div class="ev"><div class="req">write through NocoDB refused</div><div class="obs">HTTP 403 {&#x27;error&#x27;: &#x27;ERR_FORBIDDEN&#x27;, &#x27;message&#x27;: &quot;Forbidden - Source &#x27;client_data_ro&#x27; is read-only&quot;}</div><code>POST /api/v2/tables/{accounts}/records</code></div></div>
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">the client-specific test record is readable</div><div class="obs">acme-mech witness row 0001</div><code>SELECT marker FROM client_marker</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied for table accounts</div><code>INSERT INTO accounts</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied to create temporary tables in database &quot;client_data&quot;</div><code>CREATE TEMP TABLE</code></div><div class="ev"><div class="req">connection refused by the server</div><div class="obs">FATAL:  permission denied for database &quot;nocodb_meta&quot;</div><code>connect as nocodb_reader to nocodb_meta</code></div><div class="ev"><div class="req">write through NocoDB refused</div><div class="obs">HTTP 403 ERR_FORBIDDEN: Forbidden - Source &#x27;client_data_ro&#x27; is read-only</div><code>POST /api/v2/tables/{accounts}/records</code></div></div>
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">the client-specific test record is readable</div><div class="obs">beacon-hvac witness row 0001</div><code>SELECT marker FROM client_marker</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied for table accounts</div><code>INSERT INTO accounts</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied to create temporary tables in database &quot;client_data&quot;</div><code>CREATE TEMP TABLE</code></div><div class="ev"><div class="req">connection refused by the server</div><div class="obs">FATAL:  permission denied for database &quot;nocodb_meta&quot;</div><code>connect as nocodb_reader to nocodb_meta</code></div><div class="ev"><div class="req">write through NocoDB refused</div><div class="obs">HTTP 403 ERR_FORBIDDEN: Forbidden - Source &#x27;client_data_ro&#x27; is read-only</div><code>POST /api/v2/tables/{accounts}/records</code></div></div>
       </div>
     </details>
 <details class="row">
@@ -75,8 +77,8 @@
         <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>New table readable by the reader. Write on it 42501</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">row readable by the reader</div><div class="obs">created after the grants</div><code>client_loader: CREATE TABLE; nocodb_reader: SELECT</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied for table future_probe_1793634574</div><code>nocodb_reader: INSERT on the new table</code></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">row readable by the reader</div><div class="obs">created after the grants</div><code>client_loader: CREATE TABLE; nocodb_reader: SELECT</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied for table future_probe_1793634596</div><code>nocodb_reader: INSERT on the new table</code></div></div>
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">row readable by the reader</div><div class="obs">nocodb_reader read the row that client_loader inserted after the grants</div><code>client_loader: CREATE TABLE; nocodb_reader: SELECT</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied for table future_probe_1793634574</div><code>nocodb_reader: INSERT on the new table</code></div></div>
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">row readable by the reader</div><div class="obs">nocodb_reader read the row that client_loader inserted after the grants</div><code>client_loader: CREATE TABLE; nocodb_reader: SELECT</code></div><div class="ev"><div class="req">42501</div><div class="obs">42501 permission denied for table future_probe_1793634596</div><code>nocodb_reader: INSERT on the new table</code></div></div>
       </div>
     </details>
 <details class="row">
@@ -87,13 +89,13 @@
         <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>0 domains and 0 TCP proxies on 6 services</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">no domain and no proxy on postgres and nocodb</div><div class="obs">read from the Railway API at 2026-11-02T16:04:50Z</div><code>GraphQL: domains and tcpProxies, per service</code><pre>backup: 0 domains, 0 TCP proxies
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">no domain and no proxy on postgres and nocodb</div><div class="obs">read from the Railway API at 2026-11-02 16:04:50 UTC</div><code>GraphQL: domains and tcpProxies, per service</code><pre>backup: 0 domains, 0 TCP proxies
 bootstrap: 0 domains, 0 TCP proxies
 checks: 0 domains, 0 TCP proxies
 cloudflared: 0 domains, 0 TCP proxies
 nocodb: 0 domains, 0 TCP proxies
 postgres: 0 domains, 0 TCP proxies</pre></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">no domain and no proxy on postgres and nocodb</div><div class="obs">read from the Railway API at 2026-11-02T16:04:50Z</div><code>GraphQL: domains and tcpProxies, per service</code><pre>backup: 0 domains, 0 TCP proxies
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">no domain and no proxy on postgres and nocodb</div><div class="obs">read from the Railway API at 2026-11-02 16:04:50 UTC</div><code>GraphQL: domains and tcpProxies, per service</code><pre>backup: 0 domains, 0 TCP proxies
 bootstrap: 0 domains, 0 TCP proxies
 checks: 0 domains, 0 TCP proxies
 cloudflared: 0 domains, 0 TCP proxies
@@ -104,13 +106,17 @@ postgres: 0 domains, 0 TCP proxies</pre></div></div>
 <details class="row">
       <summary>
         <span class="num">5</span>
-        <span class="what"><h3>Web access</h3><p>Anonymous not served, allowed identity served, authenticated but unauthorized identity refused.</p><span class="open">Evidence</span></span>
-        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>Anonymous HTTP 403, allowed token HTTP 200, token outside the policy HTTP 403</span></span>
-        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>Anonymous HTTP 403, allowed token HTTP 200, token outside the policy HTTP 403</span></span>
+        <span class="what"><h3>Web access</h3><p>Requests without a token are blocked; this client&#x27;s service token passes Access; the other client&#x27;s valid token is blocked.</p><span class="open">Evidence</span></span>
+        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>No token HTTP 403. Own token HTTP 200 from NocoDB. Other client&#x27;s token HTTP 403 from Access</span></span>
+        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>No token HTTP 403. Own token HTTP 200 from NocoDB. Other client&#x27;s token HTTP 403 from Access</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">not served by NocoDB</div><div class="obs">HTTP 403, Location host None</div><code>GET https://railway-check-a.theaipipe.com/api/v1/health</code></div><div class="ev"><div class="req">served by NocoDB (HTTP 200)</div><div class="obs">HTTP 200 {&quot;message&quot;:&quot;OK&quot;,&quot;timestamp&quot;:1793634645998,&quot;uptime&quot;:146.343019979}</div><code>same request with the allowed service token</code></div><div class="ev"><div class="req">refused: valid token, not in the policy</div><div class="obs">HTTP 403, Location host None</div><code>same request with a valid token outside the policy</code></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">not served by NocoDB</div><div class="obs">HTTP 403, Location host None</div><code>GET https://railway-check-b.theaipipe.com/api/v1/health</code></div><div class="ev"><div class="req">served by NocoDB (HTTP 200)</div><div class="obs">HTTP 200 {&quot;message&quot;:&quot;OK&quot;,&quot;timestamp&quot;:1793634648920,&quot;uptime&quot;:243.43089778}</div><code>same request with the allowed service token</code></div><div class="ev"><div class="req">refused: valid token, not in the policy</div><div class="obs">HTTP 403, Location host None</div><code>same request with a valid token outside the policy</code></div></div>
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">request without a token blocked</div><div class="obs">HTTP 403, no redirect</div><code>GET https://railway-check-a.theaipipe.com/api/v1/health</code></div><div class="ev"><div class="req">this client&#x27;s service token passes Access and NocoDB answers</div><div class="obs">HTTP 200, NocoDB health OK, up 146 s</div><code>same request with the allowed service token</code></div><div class="ev"><div class="req">the other client&#x27;s valid service token blocked by Access</div><div class="obs">HTTP 403, refused by Cloudflare Access</div><code>same request with the other client&#x27;s service token; checked at 2026-11-02 16:29:06 UTC, environments stopped</code><pre>at the same time:
+no token: HTTP 403, refused by Cloudflare Access
+this client&#x27;s token: HTTP 530, passed Access, Cloudflare reports the tunnel origin down (error code: 1033)</pre></div><div class="ev"><div class="req">a token in no policy refused (same 403 as an invalid token)</div><div class="obs">HTTP 403, no redirect</div><code>same request with a valid token outside the policy</code></div></div>
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">request without a token blocked</div><div class="obs">HTTP 403, no redirect</div><code>GET https://railway-check-b.theaipipe.com/api/v1/health</code></div><div class="ev"><div class="req">this client&#x27;s service token passes Access and NocoDB answers</div><div class="obs">HTTP 200, NocoDB health OK, up 243 s</div><code>same request with the allowed service token</code></div><div class="ev"><div class="req">the other client&#x27;s valid service token blocked by Access</div><div class="obs">HTTP 403, refused by Cloudflare Access</div><code>same request with the other client&#x27;s service token; checked at 2026-11-02 16:29:07 UTC, environments stopped</code><pre>at the same time:
+no token: HTTP 403, refused by Cloudflare Access
+this client&#x27;s token: HTTP 530, passed Access, Cloudflare reports the tunnel origin down (error code: 1033)</pre></div><div class="ev"><div class="req">a token in no policy refused (same 403 as an invalid token)</div><div class="obs">HTTP 403, no redirect</div><code>same request with a valid token outside the policy</code></div></div>
       </div>
     </details>
 <details class="row">
@@ -121,8 +127,8 @@ postgres: 0 domains, 0 TCP proxies</pre></div></div>
         <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>Rejected with HTTP 400, users 1 before and 1 after</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">admin sign-in answers 200</div><div class="obs">HTTP 200</div><code>POST /api/v1/auth/user/signin (admin)</code></div><div class="ev"><div class="req">anonymous sign-up rejected, user count unchanged</div><div class="obs">HTTP 400 Not allowed to signup, contact super admin. If y; users 1 -&gt; 1</div><code>POST /api/v1/auth/user/signup</code></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">admin sign-in answers 200</div><div class="obs">HTTP 200</div><code>POST /api/v1/auth/user/signin (admin)</code></div><div class="ev"><div class="req">anonymous sign-up rejected, user count unchanged</div><div class="obs">HTTP 400 Not allowed to signup, contact super admin. If y; users 1 -&gt; 1</div><code>POST /api/v1/auth/user/signup</code></div></div>
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">admin sign-in answers 200</div><div class="obs">HTTP 200</div><code>POST /api/v1/auth/user/signin (admin)</code></div><div class="ev"><div class="req">anonymous sign-up rejected, user count unchanged</div><div class="obs">HTTP 400 “Not allowed to signup, contact super admin.” Users 1 before, 1 after.</div><code>POST /api/v1/auth/user/signup</code></div></div>
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">admin sign-in answers 200</div><div class="obs">HTTP 200</div><code>POST /api/v1/auth/user/signin (admin)</code></div><div class="ev"><div class="req">anonymous sign-up rejected, user count unchanged</div><div class="obs">HTTP 400 “Not allowed to signup, contact super admin.” Users 1 before, 1 after.</div><code>POST /api/v1/auth/user/signup</code></div></div>
       </div>
     </details>
 <details class="row">
@@ -133,7 +139,7 @@ postgres: 0 domains, 0 TCP proxies</pre></div></div>
         <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>acme-mech not resolved and its 2 addresses unreachable, own NocoDB answering</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">own private host resolves and answers</div><div class="obs">{&quot;addrs&quot;: [&quot;10.139.159.228&quot;, &quot;fd12:aa30:b056:1:d000:143:f20b:9fe4&quot;], &quot;tcp_8080&quot;: &quot;connected&quot;}</div><code>getaddrinfo nocodb-acme-mech.railway.internal; connect :8080</code></div><div class="ev"><div class="req">peer private host does not resolve</div><div class="obs">[Errno -2] Name or service not known</div><code>getaddrinfo nocodb-beacon-hvac.railway.internal</code></div><div class="ev"><div class="req">peer private address not reachable</div><div class="obs">10.246.62.147: TimeoutError: timed out</div><code>connect 10.246.62.147:8080</code></div><div class="ev"><div class="req">peer private address not reachable</div><div class="obs">fd12:994f:2828:1:d000:92:d3f6:3e93: OSError: [Errno 101] Network is unreachable</div><code>connect fd12:994f:2828:1:d000:92:d3f6:3e93:8080</code></div><div class="ev"><div class="req">all secret fingerprints differ</div><div class="obs">22 distinct of 22, 0 shared between clients</div><code>sha256(run id + value), first 12 hex characters</code><pre>BACKUP_PASSWORD: 2032785b3291
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">own private host resolves and answers</div><div class="obs">resolves to 10.139.159.228, fd12:aa30:b056:1:d000:143:f20b:9fe4; port 8080 connected</div><code>getaddrinfo nocodb-acme-mech.railway.internal; connect :8080</code></div><div class="ev"><div class="req">peer private host does not resolve</div><div class="obs">not resolved (name or service not known)</div><code>getaddrinfo nocodb-beacon-hvac.railway.internal</code></div><div class="ev"><div class="req">peer private address not reachable</div><div class="obs">10.246.62.147: timed out</div><code>connect 10.246.62.147:8080</code></div><div class="ev"><div class="req">peer private address not reachable</div><div class="obs">fd12:994f:2828:1:d000:92:d3f6:3e93: network is unreachable</div><code>connect fd12:994f:2828:1:d000:92:d3f6:3e93:8080</code></div><div class="ev"><div class="req">all secret fingerprints differ</div><div class="obs">22 distinct of 22, 0 shared between clients</div><code>sha256(run id + value), first 12 hex characters</code><pre>BACKUP_PASSWORD: 2032785b3291
 BACKUP_SINK_TOKEN: c6514b4d168e
 LOADER_PASSWORD: 588d685cc464
 NC_ADMIN_PASSWORD: f73035027f39
@@ -144,7 +150,7 @@ NC_META_PASSWORD: 043081556952
 NC_READER_PASSWORD: 389d72ba227d
 POSTGRES_PASSWORD: 051a1315742f
 TUNNEL_TOKEN: df0500f852d4</pre></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">own private host resolves and answers</div><div class="obs">{&quot;addrs&quot;: [&quot;10.246.62.147&quot;, &quot;fd12:994f:2828:1:d000:92:d3f6:3e93&quot;], &quot;tcp_8080&quot;: &quot;connected&quot;}</div><code>getaddrinfo nocodb-beacon-hvac.railway.internal; connect :8080</code></div><div class="ev"><div class="req">peer private host does not resolve</div><div class="obs">[Errno -2] Name or service not known</div><code>getaddrinfo nocodb-acme-mech.railway.internal</code></div><div class="ev"><div class="req">peer private address not reachable</div><div class="obs">10.139.159.228: TimeoutError: timed out</div><code>connect 10.139.159.228:8080</code></div><div class="ev"><div class="req">peer private address not reachable</div><div class="obs">fd12:aa30:b056:1:d000:143:f20b:9fe4: OSError: [Errno 101] Network is unreachable</div><code>connect fd12:aa30:b056:1:d000:143:f20b:9fe4:8080</code></div><div class="ev"><div class="req">all secret fingerprints differ</div><div class="obs">22 distinct of 22, 0 shared between clients</div><code>sha256(run id + value), first 12 hex characters</code><pre>BACKUP_PASSWORD: 10520e5aba4e
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">own private host resolves and answers</div><div class="obs">resolves to 10.246.62.147, fd12:994f:2828:1:d000:92:d3f6:3e93; port 8080 connected</div><code>getaddrinfo nocodb-beacon-hvac.railway.internal; connect :8080</code></div><div class="ev"><div class="req">peer private host does not resolve</div><div class="obs">not resolved (name or service not known)</div><code>getaddrinfo nocodb-acme-mech.railway.internal</code></div><div class="ev"><div class="req">peer private address not reachable</div><div class="obs">10.139.159.228: timed out</div><code>connect 10.139.159.228:8080</code></div><div class="ev"><div class="req">peer private address not reachable</div><div class="obs">fd12:aa30:b056:1:d000:143:f20b:9fe4: network is unreachable</div><code>connect fd12:aa30:b056:1:d000:143:f20b:9fe4:8080</code></div><div class="ev"><div class="req">all secret fingerprints differ</div><div class="obs">22 distinct of 22, 0 shared between clients</div><code>sha256(run id + value), first 12 hex characters</code><pre>BACKUP_PASSWORD: 10520e5aba4e
 BACKUP_SINK_TOKEN: e9ace5274ed8
 LOADER_PASSWORD: 03280fcb08ed
 NC_ADMIN_PASSWORD: 07324d173e39
@@ -160,24 +166,24 @@ TUNNEL_TOKEN: 2e78a5438ded</pre></div></div>
 <details class="row">
       <summary>
         <span class="num">8</span>
-        <span class="what"><h3>Repeatable</h3><p>The second environment needs no repair; replaying the bootstrap changes nothing.</p><span class="open">Evidence</span></span>
-        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>Corrections carried into the reference. Replay changed nothing</span></span>
-        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>One pass from the final reference, no repair. Replay changed nothing</span></span>
+        <span class="what"><h3>Repeatable</h3><p>The second environment needs no manual fix; replaying the bootstrap creates no duplicate objects and leaves the sample rows unchanged.</p><span class="open">Evidence</span></span>
+        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>Corrections carried into the reference. No duplicate objects; sample rows unchanged on replay</span></span>
+        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>Completed without manual fixes. No duplicate objects; sample rows unchanged on replay</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">bootstrap replayed: no duplicate, no reset</div><div class="obs">state digest before 6133aaed332a5d24, after 6133aaed332a5d24, created on replay: 0</div><code>redeploy the bootstrap service</code></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">stood up from the final reference, no repair</div><div class="obs">exit code 0 from an empty project, commit 1bc94a8</div><code>python3 provision/provision.py up beacon-hvac</code></div><div class="ev"><div class="req">earlier attempt, on a previous commit</div><div class="obs">stopped at 2026-11-01T15:38:16Z by Railway: You&#x27;ve hit the service creation limit for new accounts (25 services per day).</div><code>Railway account limit. Before the next attempt the reference was corrected: project lookup by workspace, database grants after a restore.</code></div><div class="ev"><div class="req">only identifier, domain and secrets differ</div><div class="obs">0 differences left once those are masked</div><code>normalized service settings and variables compared</code></div><div class="ev"><div class="req">bootstrap replayed: no duplicate, no reset</div><div class="obs">state digest before d17a377294161701, after d17a377294161701, created on replay: 0</div><code>redeploy the bootstrap service</code></div></div>
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">bootstrap replayed: no duplicate objects, sample rows unchanged</div><div class="obs">state digest before 6133aaed332a5d24, after 6133aaed332a5d24; objects created on replay: 0</div><code>redeploy the bootstrap service; the digest covers roles, databases, NocoDB objects and the sample rows</code></div></div>
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">stood up from the final reference without manual fixes</div><div class="obs">exit code 0 from an empty project, commit 1bc94a8</div><code>python3 provision/provision.py up beacon-hvac</code></div><div class="ev"><div class="req">earlier attempt, on a previous commit</div><div class="obs">stopped at 2026-11-01 15:38:16 UTC by Railway: You&#x27;ve hit the service creation limit for new accounts (25 services per day).</div><code>Railway account limit. Before the next attempt the reference was corrected: project lookup by workspace, database grants after a restore.</code></div><div class="ev"><div class="req">only identifier, domain and secrets differ</div><div class="obs">0 differences left once those are masked</div><code>normalized service settings and variables compared</code></div><div class="ev"><div class="req">bootstrap replayed: no duplicate objects, sample rows unchanged</div><div class="obs">state digest before d17a377294161701, after d17a377294161701; objects created on replay: 0</div><code>redeploy the bootstrap service; the digest covers roles, databases, NocoDB objects and the sample rows</code></div></div>
       </div>
     </details>
 <details class="row">
       <summary>
         <span class="num">9</span>
         <span class="what"><h3>Scheduled job</h3><p>A run triggered by Railway finishes cleanly.</p><span class="open">Evidence</span></span>
-        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>Railway ran it for 15:55 UTC, finished SUCCESS</span></span>
-        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>Railway ran it for 16:00 UTC, finished SUCCESS</span></span>
+        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>Railway started it for 15:55 UTC; the job exited cleanly</span></span>
+        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>Railway started it for 16:00 UTC; the job exited cleanly</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">run triggered by Railway, clean finish</div><div class="obs">scheduled for 2026-11-02T15:55:00.000Z, container started 2026-11-02T15:55:17.552785647Z, deployment SUCCESS</div><code>cron */5 * * * * for the test, back to 17 8 * * * UTC afterwards</code><pre>{
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">run triggered by Railway, clean finish</div><div class="obs">scheduled for 2026-11-02 15:55 UTC, container started 2026-11-02 15:55:17 UTC, deployment status SUCCESS</div><code>cron */5 * * * * for the test, back to 17 8 * * * UTC afterwards</code><pre>{
  &quot;age_header&quot;: &quot;age-encryption.org/v1&quot;,
  &quot;dumps&quot;: {
   &quot;client_data&quot;: 5311,
@@ -190,7 +196,7 @@ TUNNEL_TOKEN: 2e78a5438ded</pre></div></div>
  &quot;pg_dump&quot;: &quot;pg_dump (PostgreSQL) 18.6 (Debian 18.6-1.pgdg13+2)&quot;,
  &quot;sha256&quot;: &quot;0d003dd540b13694ad3c45c85e545bb65a50b2a1f8a0517b24f31c9aed436f80&quot;
 }</pre></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">run triggered by Railway, clean finish</div><div class="obs">scheduled for 2026-11-02T16:00:00.000Z, container started 2026-11-02T16:01:01.482944409Z, deployment SUCCESS</div><code>cron */5 * * * * for the test, back to 17 8 * * * UTC afterwards</code><pre>{
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">run triggered by Railway, clean finish</div><div class="obs">scheduled for 2026-11-02 16:00 UTC, container started 2026-11-02 16:01:01 UTC, deployment status SUCCESS</div><code>cron */5 * * * * for the test, back to 17 8 * * * UTC afterwards</code><pre>{
  &quot;age_header&quot;: &quot;age-encryption.org/v1&quot;,
  &quot;dumps&quot;: {
   &quot;client_data&quot;: 5314,
@@ -208,19 +214,19 @@ TUNNEL_TOKEN: 2e78a5438ded</pre></div></div>
 <details class="row">
       <summary>
         <span class="num">10</span>
-        <span class="what"><h3>Backup</h3><p>Restored into a new destination on the same NocoDB version, witness row read back in NocoDB.</p><span class="open">Evidence</span></span>
-        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>Restored into a new project, witness row read back through NocoDB</span></span>
-        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>Restored into a new project, witness row read back through NocoDB</span></span>
+        <span class="what"><h3>Backup</h3><p>Restored into a new destination on the same NocoDB version, client-specific test record read back in NocoDB.</p><span class="open">Evidence</span></span>
+        <span class="cell cell-a"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">acme-mech</span>Restored into a new project, client-specific test record read back through NocoDB</span></span>
+        <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>Restored into a new project, client-specific test record read back through NocoDB</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">encrypted, stored off Railway</div><div class="obs">HTTP 200, checksum match True, age header True, plain witness text in the object False</div><code>GET the object with the read token</code></div><div class="ev"><div class="req">environment can add a backup, not read or replace one</div><div class="obs">read with its token HTTP 403, replace HTTP 409</div><code>same object, write token</code></div><div class="ev"><div class="req">witness row read through the restored NocoDB</div><div class="obs">acme-mech witness row 0001, NocoDB 2026.10.1</div><code>new project acme-mech-restore, same image digests</code><pre>{
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">encrypted, stored off Railway</div><div class="obs">HTTP 200; checksum matches; age header present; plain test-record text in the object: no</div><code>GET the object with the read token</code></div><div class="ev"><div class="req">environment can add a backup, not read or replace one</div><div class="obs">read with its token HTTP 403, replace HTTP 409</div><code>same object, write token</code></div><div class="ev"><div class="req">two uploads of one new key cannot both succeed</div><div class="obs">10 concurrent uploads: 1 accepted (201), 9 refused (409); content afterwards unchanged</div><code>sink redeployed with one conditional write, checked 2026-11-02 16:37 UTC on the test key acme-mech/concurrency-test-20261102T163749Z.bin, then deleted</code></div><div class="ev"><div class="req">client-specific test record read through the restored NocoDB</div><div class="obs">acme-mech witness row 0001, NocoDB 2026.10.1</div><code>new project acme-mech-restore, same image digests</code><pre>{
  &quot;backup_stamp&quot;: &quot;20261102T155517Z&quot;,
  &quot;job&quot;: &quot;restore&quot;,
  &quot;key&quot;: &quot;acme-mech/20261102T155517Z.tar.age&quot;,
  &quot;marker_sql&quot;: &quot;acme-mech witness row 0001&quot;,
  &quot;ok&quot;: true
 }</pre></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">encrypted, stored off Railway</div><div class="obs">HTTP 200, checksum match True, age header True, plain witness text in the object False</div><code>GET the object with the read token</code></div><div class="ev"><div class="req">environment can add a backup, not read or replace one</div><div class="obs">read with its token HTTP 403, replace HTTP 409</div><code>same object, write token</code></div><div class="ev"><div class="req">witness row read through the restored NocoDB</div><div class="obs">beacon-hvac witness row 0001, NocoDB 2026.10.1</div><code>new project beacon-hvac-restore, same image digests</code><pre>{
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">encrypted, stored off Railway</div><div class="obs">HTTP 200; checksum matches; age header present; plain test-record text in the object: no</div><code>GET the object with the read token</code></div><div class="ev"><div class="req">environment can add a backup, not read or replace one</div><div class="obs">read with its token HTTP 403, replace HTTP 409</div><code>same object, write token</code></div><div class="ev"><div class="req">two uploads of one new key cannot both succeed</div><div class="obs">10 concurrent uploads: 1 accepted (201), 9 refused (409); content afterwards unchanged</div><code>sink redeployed with one conditional write, checked 2026-11-02 16:37 UTC on the test key acme-mech/concurrency-test-20261102T163749Z.bin, then deleted</code></div><div class="ev"><div class="req">client-specific test record read through the restored NocoDB</div><div class="obs">beacon-hvac witness row 0001, NocoDB 2026.10.1</div><code>new project beacon-hvac-restore, same image digests</code><pre>{
  &quot;backup_stamp&quot;: &quot;20261102T160100Z&quot;,
  &quot;job&quot;: &quot;restore&quot;,
  &quot;key&quot;: &quot;beacon-hvac/20261102T160100Z.tar.age&quot;,
@@ -237,7 +243,7 @@ TUNNEL_TOKEN: 2e78a5438ded</pre></div></div>
         <span class="cell cell-b"><svg viewBox="0 0 24 22" aria-hidden="true"><path d="M3.2 12.4c1.7 1.5 3.3 3.4 4.8 6 3-6.6 7.3-11.7 13-15.6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="client-tag">beacon-hvac</span>6 services on pinned digests, identical in both environments</span></span>
       </summary>
       <div class="evidence">
-        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">versions and digests deployed, identical between A and B</div><div class="obs">identical True, matches versions.lock.json True</div><code>deployment.meta.imageDigest, per service</code><pre>backup: ghcr.io/fred1433/railway-nocodb-client-env/ops
+        <div class="ev-col"><h4>acme-mech</h4><div class="ev"><div class="req">versions and digests deployed, identical between A and B</div><div class="obs">identical in both environments: yes; match the version manifest: yes</div><code>deployment.meta.imageDigest, per service</code><pre>backup: ghcr.io/fred1433/railway-nocodb-client-env/ops
   deployed sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2
 bootstrap: ghcr.io/fred1433/railway-nocodb-client-env/ops
   deployed sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2
@@ -249,7 +255,7 @@ nocodb: nocodb/nocodb:2026.10.1
   deployed sha256:8c2dd06896d95e750d55010e529972c22c1ee73b22dce321b1d2de2e7d5cd6ae
 postgres: postgres:18.6
   deployed sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81</pre></div><div class="ev"><div class="req">version reported by the running server</div><div class="obs">18.6 (Debian 18.6-1.pgdg13+2)</div><code>SHOW server_version</code></div><div class="ev"><div class="req">version reported by the running service</div><div class="obs">2026.10.1</div><code>GET /api/v1/version</code></div></div>
-        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">versions and digests deployed, identical between A and B</div><div class="obs">identical True, matches versions.lock.json True</div><code>deployment.meta.imageDigest, per service</code><pre>backup: ghcr.io/fred1433/railway-nocodb-client-env/ops
+        <div class="ev-col"><h4>beacon-hvac</h4><div class="ev"><div class="req">versions and digests deployed, identical between A and B</div><div class="obs">identical in both environments: yes; match the version manifest: yes</div><code>deployment.meta.imageDigest, per service</code><pre>backup: ghcr.io/fred1433/railway-nocodb-client-env/ops
   deployed sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2
 bootstrap: ghcr.io/fred1433/railway-nocodb-client-env/ops
   deployed sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2
@@ -270,25 +276,25 @@ postgres: postgres:18.6
     <ol>
       <li>Private tunnel rather than a public Railway domain: a second public path would go around Access.</li>
       <li>Access in front of NocoDB Community leaves a second login: a token that passes Access still gets HTTP 401 from NocoDB.</li>
-      <li>Since 9 January 2026 the <a href="https://nocodb.com/docs/product-docs/getting-started/license">NocoDB license</a> reads: "Internal self-hosting does not require a commercial license", while a commercial license is needed to "Provide direct NocoDB access to external customers". The question is who uses NocoDB, and who owns the instances.</li>
-      <li>QuickBooks OAuth redirects and webhooks do not go through an interactive login, and Intuit signs its webhooks. They need their own route.</li>
+      <li>Access was tested with service tokens. Human sign-in was not tested.</li>
+      <li>Since 9 January 2026 the <a href="https://nocodb.com/docs/product-docs/getting-started/license">NocoDB license</a> reads: “Internal self-hosting does not require a commercial license”, while a commercial license is needed to “Offer NocoDB as a hosted or managed service” or to “Provide direct NocoDB access to external customers”. The question is who uses NocoDB, and who owns the instances.</li>
+      <li>QuickBooks webhooks need a non-interactive endpoint with signature validation. The OAuth callback route must be tested separately.</li>
       <li>Read-only NocoDB is a choice for this example, not a rule of the setup. Edits would need a role with write grants.</li>
-      <li>On NocoDB 2026.10.1, NC_INVITE_ONLY_SIGNUP=true left sign-up open on the first run (HTTP 200). The bootstrap now sets the admin setting and checks it before the tunnel starts.</li>
-      <li>NocoDB 2026.10.1 reached 0.99 GB in these two environments and rested near 0.72 GB. It did not start under a 512 MB limit in the settings tried.</li>
+      <li>On NocoDB 2026.10.1, NC_INVITE_ONLY_SIGNUP=true left sign-up open on the first run: HTTP 200 and users 1 to 2 (<a href="https://github.com/fred1433/railway-nocodb-client-env/blob/02f76ee/runs/20261101/acme-mech/inside.json">first-run checks, commit 02f76ee</a>). The bootstrap now sets the admin setting and checks it before the tunnel starts.</li>
+      <li>NocoDB 2026.10.1 reached 0.99 GB in these two environments and rested near 0.72 GB. In a feasibility test under a 512 MB service limit it did not start in the settings tried (<a href="https://github.com/fred1433/railway-nocodb-client-env/blob/main/runs/feasibility/nocodb_512mb.json">record</a>).</li>
       <li>Railway cron schedules are in UTC, so the local time of a backup moves with daylight saving.</li>
-      <li>Outside this example: real QuickBooks, a GitHub organization per client, n8n.</li>
+      <li>Outside this example: real QuickBooks; GitHub repositories, teams and access per client; n8n.</li>
     </ol>
   </section>
 
   <dl class="fields closing">
     <div><dt>Run</dt><dd>1 to 2 November 2026</dd></div>
-    <div><dt>Environments</dt><dd>Up for the length of the run</dd></div>
+    <div><dt>Environments</dt><dd>Up for the length of the run, then stopped</dd></div>
     <div><dt>Reference, scripts and raw outputs</dt><dd><a href="https://github.com/fred1433/railway-nocodb-client-env">fred1433/railway-nocodb-client-env</a></dd></div>
   </dl>
 
   <footer>
     <span>The AI Pipe</span>
-    <a href="https://cal.theaipipe.com">15 minutes with Frederic</a>
   </footer>
 </main>
 <script src="page.js" defer></script>

@@ -1,0 +1,26 @@
+{
+ "accepted": 1,
+ "at": "2026-11-02T16:37:54Z",
+ "attempts": 10,
+ "codes": [
+  409,
+  409,
+  409,
+  409,
+  409,
+  409,
+  409,
+  201,
+  409,
+  409
+ ],
+ "content_unchanged": true,
+ "later_upload": 409,
+ "ok": true,
+ "refused": 9,
+ "run": "20261101",
+ "stored_matches_the_accepted_upload": true,
+ "stored_sha256": "402b7df424a8d2b528714381bfbc41150b36e53ff65cd9fab6639a887520ce7c",
+ "test_key": "acme-mech/concurrency-test-20261102T163749Z.bin",
+ "test_key_deleted": true
+}
