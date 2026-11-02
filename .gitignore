@@ -8,3 +8,4 @@ node_modules/
 /tmp/
 runs/20000101/
 page/site/index.html.mock
+.pytest_cache/

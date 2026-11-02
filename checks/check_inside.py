@@ -53,6 +53,12 @@ def http(method, path, body=None, token=None):
         return status, raw.decode("utf-8", "replace")[:200]
 
 
+def first_sentence(text):
+    text = " ".join(str(text).split())
+    end = text.find(". ")
+    return text if end < 0 else text[:end + 1]
+
+
 def resolve(name):
     try:
         return sorted({i[4][0] for i in socket.getaddrinfo(name, None)}), None
@@ -89,7 +95,10 @@ def nocodb_checks():
           version.get("currentVersion") if isinstance(version, dict) else str(version)[:80], True, "GET /api/v1/version")
     status, out = http("POST", f"/api/v2/tables/{by_name['accounts']['id']}/records",
                        {"account_no": 9999, "name": "write attempt", "kind": "asset"}, token=token)
-    check("readonly.nocodb_write", "write through NocoDB refused", f"HTTP {status} {str(out)[:120]}", 400 <= status < 500,
+    error, message = (out.get("error"), out.get("message") or out.get("msg")) if isinstance(out, dict) else (None, str(out)[:120])
+    readonly_refusal = status == 403 and error == "ERR_FORBIDDEN" and "read-only" in str(message)
+    check("readonly.nocodb_write", "write through NocoDB refused because the source is read-only",
+          f"HTTP {status} {error or ''} {message or ''}".replace("  ", " ").strip(), readonly_refusal,
           "POST /api/v2/tables/{accounts}/records")
     users_before = http("GET", "/api/v1/users?limit=100", token=token)
     before = users_before[1]["pageInfo"]["totalRows"] if users_before[0] == 200 else None
@@ -97,10 +106,11 @@ def nocodb_checks():
     status, out = http("POST", "/api/v1/auth/user/signup", {"email": email, "password": "Aa1!" + "probe-signup-attempt"})
     users_after = http("GET", "/api/v1/users?limit=100", token=token)
     after = users_after[1]["pageInfo"]["totalRows"] if users_after[0] == 200 else None
-    said = (out.get("msg") or "")[:48] if isinstance(out, dict) else str(out)[:48]
-    check("signup.anonymous", "anonymous sign-up rejected, user count unchanged",
-          f"HTTP {status} {said}; users {before} -> {after}",
-          400 <= status < 500 and before == after and before is not None, "POST /api/v1/auth/user/signup")
+    said = (out.get("msg") or out.get("message") or "") if isinstance(out, dict) else str(out)
+    check("signup.anonymous", "sign-up refused by NocoDB (Not allowed to signup), user count unchanged",
+          f"HTTP {status} {first_sentence(said)} Users {before} before, {after} after.",
+          400 <= status < 500 and "Not allowed to signup" in said and before == after and before is not None,
+          "POST /api/v1/auth/user/signup")
 
 
 def sql_checks():
@@ -113,20 +123,26 @@ def sql_checks():
         check("readonly.insert", "42501", f"{state} {msg}", state == "42501", "INSERT INTO accounts")
         state, msg = sqlstate_of(lambda: c.execute("create temp table t_probe(x int)"))
         check("readonly.temp", "42501", f"{state} {msg}", state == "42501", "CREATE TEMP TABLE")
+    # libpq gives no SQLSTATE on a failed connection and the server text follows lc_messages, so the evidence is
+    # the failed connection plus the catalog, read by the same role on the database it may use.
     try:
         conn(READER, E["NC_READER_PASSWORD"], META_DB).close()
-        refused = "connected"
-    except psycopg.OperationalError as exc:  # libpq gives no SQLSTATE on a failed connection, so the server text is the evidence
-        refused = "FATAL" + str(exc).split("FATAL", 1)[-1].splitlines()[0][:100]
-    check("readonly.meta", "connection refused by the server", refused, "permission denied for database" in refused, f"connect as {READER} to {META_DB}")
+        connected, said = True, "connected"
+    except psycopg.OperationalError as exc:
+        connected, said = False, str(exc).strip().splitlines()[0].split("failed: ", 1)[-1][:100]
+    with conn(READER, E["NC_READER_PASSWORD"], CLIENT_DB) as c:
+        may = c.execute("select has_database_privilege(current_user, %s, 'CONNECT')", (META_DB,)).fetchone()[0]
+    check("readonly.meta", "connection refused, and the role has no CONNECT right on it",
+          f"{'connected' if connected else 'connection refused'}; CONNECT right: {'yes' if may else 'no'}; server said: {said}",
+          not connected and not may, f"connect as {READER} to {META_DB}; has_database_privilege")
     name = f"future_probe_{int(time.time())}"
     with conn(LOADER, E["LOADER_PASSWORD"], CLIENT_DB) as load:
         load.execute(f"create table {name} (id int primary key, note text)")
-        load.execute(f"insert into {name} values (1, 'created after the grants')")
+        load.execute(f"insert into {name} values (1, 'inserted by the load role')")
         try:
             with conn(READER, E["NC_READER_PASSWORD"], CLIENT_DB) as c:
                 row = c.execute(f"select note from {name}").fetchone()[0]
-                check("future.read", "row readable by the reader", row, row == "created after the grants",
+                check("future.read", "row readable by the reader", f"{READER} read the row inserted by {LOADER}" if row == "inserted by the load role" else str(row), row == "inserted by the load role",
                       f"{LOADER}: CREATE TABLE; {READER}: SELECT")
                 state, msg = sqlstate_of(lambda: c.execute(f"insert into {name} values (2, 'x')"))
                 check("future.write", "42501", f"{state} {msg}", state == "42501", f"{READER}: INSERT on the new table")

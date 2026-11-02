@@ -1,7 +1,7 @@
 """Idempotent bootstrap. Waits for its dependencies, fails clearly, and leaves data alone on a replay."""
 import hashlib, json, os, time
 from psycopg import sql
-from common import PGHOST, PGPORT, NocoDB, connect, die, emit, wait_for_postgres
+from common import APP_ROOT, PGHOST, PGPORT, SAMPLE_TABLES, NocoDB, connect, die, emit, table_state, wait_for_postgres
 
 E = os.environ
 CLIENT_DB = "client_data"
@@ -12,7 +12,7 @@ ROLES = {
     "nocodb_reader": (E["NC_READER_PASSWORD"], "NOINHERIT"),
     "backup_runner": (E["BACKUP_PASSWORD"], "INHERIT"),
 }
-EXPECTED_TABLES = ["accounts", "client_marker", "monthly_close"]
+EXPECTED_TABLES = SAMPLE_TABLES
 created = []
 
 
@@ -46,7 +46,7 @@ def lock_client_schema():
 
 
 def seed():
-    with open("/app/reference/seed.sql") as fh:
+    with open(os.path.join(APP_ROOT, "reference/seed.sql")) as fh:
         script = fh.read()
     with connect("client_loader", E["LOADER_PASSWORD"], CLIENT_DB) as conn:
         for statement in [s.strip() for s in script.split(";\n") if s.strip()]:
@@ -109,8 +109,7 @@ def snapshot(nocodb_state):
         state["databases"] = [r[0] for r in conn.execute(
             "select datname from pg_database where not datistemplate order by 1").fetchall()]
     with connect("owner", E["POSTGRES_PASSWORD"], CLIENT_DB) as conn:
-        state["rows"] = {t: conn.execute(f"select count(*), md5(coalesce(string_agg(x::text, '|' order by x::text), '')) from {t} x").fetchone()[:2]
-                         for t in EXPECTED_TABLES}
+        state["rows"] = table_state(conn)
     state["nocodb"] = nocodb_state
     digest = hashlib.sha256(json.dumps(state, sort_keys=True, default=str).encode()).hexdigest()
     emit("STATE", digest=digest, state=state)

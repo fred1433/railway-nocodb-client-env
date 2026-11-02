@@ -6,6 +6,14 @@ PGHOST = os.environ.get("PGHOST", "postgres.railway.internal")
 PGPORT = int(os.environ.get("PGPORT", "5432"))
 PG_WAIT_SECONDS = int(os.environ.get("PG_WAIT_SECONDS", "180"))
 NC_WAIT_SECONDS = int(os.environ.get("NC_WAIT_SECONDS", "420"))
+APP_ROOT = os.environ.get("APP_ROOT", "/app")
+SAMPLE_TABLES = ["accounts", "client_marker", "monthly_close"]
+
+
+def table_state(conn, tables=SAMPLE_TABLES):
+    """Row count and content digest of each sample table, so a replay can be compared row for row."""
+    return {t: list(conn.execute(f"select count(*), md5(coalesce(string_agg(x::text, '|' order by x::text), '')) from {t} x").fetchone()[:2])
+            for t in tables}
 
 
 def emit(tag, **fields):

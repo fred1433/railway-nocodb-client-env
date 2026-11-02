@@ -134,10 +134,29 @@ def sink_url(acct):
 
 # Railway ------------------------------------------------------------------------------------------
 
-def ensure_project(client, run):
+def list_projects():
     # The workspace argument matters: without it the API answers an empty list, and every run would create a new project.
-    projects = gql("query($w:String!){projects(workspaceId:$w){edges{node{id name environments{edges{node{id name}}}}}}}", {"w": WS})["projects"]["edges"]
-    node = next((e["node"] for e in projects if e["node"]["name"] == client["project"]), None)
+    return [e["node"] for e in gql("query($w:String!){projects(workspaceId:$w){edges{node{id name environments{edges{node{id name}}}}}}}",
+                                   {"w": WS})["projects"]["edges"]]
+
+
+def create_project(name, run):
+    """Create a project that this caller owns. Never adopts one: an existing project of that name is an error."""
+    if any(p["name"] == name for p in list_projects()):
+        sys.exit(f"project {name} already exists: refusing to adopt it")
+    node = gql("mutation($i:ProjectCreateInput!){projectCreate(input:$i){id name environments{edges{node{id name}}}}}",
+               {"i": {"name": name, "workspaceId": WS, "defaultEnvironmentName": "production"}})["projectCreate"]
+    run.note("project_created", id=node["id"], name=name)
+    return node["id"], node["environments"]["edges"][0]["node"]["id"]
+
+
+def default_run():
+    """One default for provision.py and prove.py: RUN_ID if set, else today's UTC date. Pass --run explicitly."""
+    return os.environ.get("RUN_ID") or time.strftime("%Y%m%d", time.gmtime())
+
+
+def ensure_project(client, run):
+    node = next((p for p in list_projects() if p["name"] == client["project"]), None)
     if not node:
         node = gql("mutation($i:ProjectCreateInput!){projectCreate(input:$i){id name environments{edges{node{id name}}}}}",
                    {"i": {"name": client["project"], "workspaceId": WS, "defaultEnvironmentName": "production"}})["projectCreate"]
@@ -296,6 +315,30 @@ def up(client, run):
     run.guard()
 
 
+def record_attempt(client, run, stand_up):
+    """Every `up` leaves one entry in runs/<run>/<client>/up_attempts.json: commit, exit code, what stopped it."""
+    started = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    head = subprocess.run(["git", "-C", ROOT, "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    code, stopped = 0, None
+    try:
+        stand_up()
+    except SystemExit as exc:
+        code = exc.code if isinstance(exc.code, int) else 1
+        stopped = None if code == 0 else str(exc.code)[:200]
+    except Exception as exc:  # recorded, then raised again
+        code, stopped = 1, (type(exc).__name__ + ": " + str(exc))[:200]
+        raise
+    finally:
+        path = os.path.join(run.dir, "up_attempts.json")
+        attempts = json.load(open(path)) if os.path.exists(path) else []
+        attempts.append({"attempt": len(attempts) + 1, "started": started, "ended": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                         "commit": head, "exit_code": code, "stopped_by": stopped})
+        with open(path, "w") as fh:
+            json.dump(attempts, fh, indent=1)
+    if code:
+        sys.exit(code)
+
+
 def redeploy(client, name, run):
     sec, _ = load_secrets(client)
     pid, env = sec["project_id"], sec["environment_id"]
@@ -336,8 +379,11 @@ if __name__ == "__main__":
     ap.add_argument("command", choices=("up", "redeploy", "down"))
     ap.add_argument("client")
     ap.add_argument("service", nargs="?")
-    ap.add_argument("--run", default=time.strftime("%Y%m%d", time.gmtime()))
+    ap.add_argument("--run", default=default_run())
     args = ap.parse_args()
     client = load_json(f"reference/clients/{args.client}.json")
     run = Run(client, args.run)
-    {"up": lambda: up(client, run), "redeploy": lambda: redeploy(client, args.service, run), "down": lambda: down(client)}[args.command]()
+    if args.command == "up":
+        record_attempt(client, run, lambda: up(client, run))
+    else:
+        {"redeploy": lambda: redeploy(client, args.service, run), "down": lambda: down(client)}[args.command]()

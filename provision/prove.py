@@ -2,10 +2,14 @@
 """Runs the proofs against stood-up environments and stores redacted outputs under runs/<run>/.
 
     prove.py checks <client>     run the checks service, keep its CHECK lines
-    prove.py outside <client>    Access checks from the public internet
-    prove.py replay <client>     redeploy bootstrap, compare state digests
+    prove.py outside <client>    Access checks from the public internet (own, other client's and no-policy tokens)
+    prove.py outside-cross <client>  the same with NocoDB stopped: own token passes Access, the other client's is refused
+    prove.py replay <client>     insert a sentinel row, redeploy bootstrap, require the sentinel and the sample rows unchanged
     prove.py cron <client>       let Railway trigger the backup once, verify the stored object
-    prove.py restore <client>    restore into a new project, read the witness row through NocoDB
+    prove.py restore <client> [--key K]  restore the backup named by this run's cron.json (or K) into a new project
+                                 created for this attempt, read the client-specific test record through NocoDB
+
+Every command exits 1 when its proof fails, so a driver can stop on the first failure.
     prove.py memory <client>     read the memory series of the running services
     prove.py audit               inventory, manifest, secret fingerprints, config diff
 """
@@ -49,7 +53,9 @@ def out_path(run, *parts):
     return path
 
 
-def store(path, data):
+def store(path, data, run=None):
+    if run and isinstance(data, dict):
+        data = {**data, "run": run}
     with open(path, "w") as fh:
         fh.write(redact(json.dumps(data, indent=1, sort_keys=True, default=str)) + "\n")
 
@@ -92,39 +98,72 @@ def cmd_checks(name, run):
     lines = log_lines(dep)
     checks = [json.loads(l.strip()[6:]) for l in lines if l.strip().startswith("CHECK ")]
     store(out_path(run, name, "inside.json"), {"deployment": dep, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                                               "result": result, "checks": checks, "peer_addrs_tested": peer_addrs})
+                                               "result": result, "checks": checks, "peer_addrs_tested": peer_addrs}, run)
     print(json.dumps(result))
     for c in checks:
         print(("ok  " if c["ok"] else "FAIL"), c["id"], str(c["observed"])[:110])
+    return bool(result.get("ok")) and bool(checks) and all(c["ok"] for c in checks)
 
 
-def cmd_outside(name, run):
-    client, sec, *_ = ctx(name)
+def service_token(sec, slot):
+    return (sec[slot]["client_id"], sec[slot]["client_secret"]) if slot in sec else None
+
+
+def cmd_outside(name, run, origin_running=True):
+    client = P.load_json(f"reference/clients/{name}.json")
+    sec, _ = P.load_secrets(client)
+    peer_name = next(c for c in CLIENTS if c != name)
+    peer_sec, _ = P.load_secrets(P.load_json(f"reference/clients/{peer_name}.json"))
     sys.path.insert(0, os.path.join(ROOT, "checks"))
     import check_outside
-    allowed = (sec["svc_allowed"]["client_id"], sec["svc_allowed"]["client_secret"])
-    other = (sec["svc_other"]["client_id"], sec["svc_other"]["client_secret"])
-    checks = check_outside.run(client["hostname"], allowed, other)
-    store(out_path(run, name, "outside.json"), {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "checks": checks})
+    checks = check_outside.run(client["hostname"], service_token(sec, "svc_allowed"), service_token(peer_sec, "svc_allowed"),
+                               service_token(sec, "svc_other"), origin_running=origin_running)
+    data = {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "checks": checks, "origin_running": origin_running,
+            "peer_token_from": peer_name}
+    store(out_path(run, name, "outside.json" if origin_running else "outside_cross.json"), data, run)
     for c in checks:
         print(("ok  " if c["ok"] else "FAIL"), c["id"], str(c["observed"])[:110])
+    return bool(checks) and all(c["ok"] for c in checks)
 
 
-def bootstrap_digest(dep):
-    return wait_end(dep)
+def cmd_outside_cross(name, run):
+    return cmd_outside(name, run, origin_running=False)
+
+
+def sentinel_job(pid, env, ids, value, action):
+    """The checks service runs the sentinel job once, then gets its own job back."""
+    P.set_vars(pid, env, ids["checks"], {"OPS_JOB": "sentinel", "SENTINEL": value, "SENTINEL_ACTION": action})
+    try:
+        return wait_end(P.deploy(ids["checks"], env))
+    finally:
+        P.set_vars(pid, env, ids["checks"], {"OPS_JOB": "checks"})
+
+
+def replay_verdict(before_state, inserted, after_state, after_result, checked):
+    """No duplicate objects, no reset: nothing created, roles, databases and NocoDB objects as before, and the
+    sample rows, sentinel included, unchanged across the replay."""
+    same_objects = all(before_state.get(k) == after_state.get(k) for k in ("roles", "databases", "nocodb"))
+    rows_kept = inserted.get("rows") is not None and inserted.get("rows") == after_state.get("rows") == checked.get("rows")
+    return {"created_on_replay": after_result.get("created"), "same_objects": same_objects, "sentinel_kept": checked.get("sentinel_found") == 1,
+            "sample_rows_unchanged": rows_kept,
+            "ok": bool(after_result.get("ok")) and not after_result.get("created") and same_objects and rows_kept and checked.get("sentinel_found") == 1}
 
 
 def cmd_replay(name, run):
     client, sec, pid, env, ids = ctx(name)
     prior = gql("query($p:String!,$e:String!,$s:String!){deployments(first:1,input:{projectId:$p,environmentId:$e,serviceId:$s}){edges{node{id}}}}",
                 {"p": pid, "e": env, "s": ids["bootstrap"]})["deployments"]["edges"][0]["node"]["id"]
-    before = wait_end(prior, seconds=30)
+    before, before_state = wait_end(prior, seconds=30), wait_end(prior, tag="STATE", seconds=30)["state"]
+    value = f"{run}-{hashlib.sha256(os.urandom(16)).hexdigest()[:12]}"
+    inserted = sentinel_job(pid, env, ids, value, "insert")
     dep = P.deploy(ids["bootstrap"], env)
-    after = wait_end(dep)
-    data = {"before": before, "after": after, "same_digest": before["state_digest"] == after["state_digest"],
-            "created_on_replay": after["created"], "ok": after.get("ok") and before["state_digest"] == after["state_digest"] and not after["created"]}
-    store(out_path(run, name, "replay.json"), data)
-    print(json.dumps({k: data[k] for k in ("same_digest", "created_on_replay", "ok")}))
+    after, after_state = wait_end(dep), wait_end(dep, tag="STATE")["state"]
+    checked = sentinel_job(pid, env, ids, value, "check")
+    verdict = replay_verdict(before_state, inserted, after_state, after, checked)
+    data = {"before": before, "after": after, "sentinel": {"inserted": inserted, "checked": checked}, **verdict}
+    store(out_path(run, name, "replay.json"), data, run)
+    print(json.dumps(verdict))
+    return verdict["ok"]
 
 
 def sink_call(url, token, method="GET"):
@@ -162,24 +201,43 @@ def cmd_cron(name, run):
                           "starts_with_age_header": body.startswith(b"age-encryption.org/v1"), "contains_plain_marker": client["marker"].encode() in body}
         data["write_token_cannot_read"] = sink_call(f"{base}/{result['key']}", sec["sink_write"])[0]
         data["write_token_cannot_replace"] = sink_call(f"{base}/{result['key']}", sec["sink_write"], "PUT")[0]
-    store(out_path(run, name, "cron.json"), data)
+    store(out_path(run, name, "cron.json"), data, run)
     print(json.dumps(data)[:700])
+    stored = data.get("stored") or {}
+    return (bool(result.get("ok")) and status == "SUCCESS" and stored.get("http") == 200 and stored.get("sha256_match") is True
+            and stored.get("starts_with_age_header") is True and stored.get("contains_plain_marker") is False
+            and data.get("write_token_cannot_read") == 403 and data.get("write_token_cannot_replace") == 409)
 
 
-def cmd_restore(name, run):
+def backup_key(name, run, key=None):
+    """The backup to restore: the one this run's scheduled job stored, or one named on the command line."""
+    if key:
+        return key
+    path = out_path(run, name, "cron.json")
+    if not os.path.exists(path):
+        sys.exit(f"no {path}: run `prove.py cron {name}` for this run first, or pass --key")
+    cron = json.load(open(path))
+    if not cron.get("result", {}).get("ok") or not cron["result"].get("key"):
+        sys.exit("the backup run of this run did not succeed: nothing to restore")
+    return cron["result"]["key"]
+
+
+def cmd_restore(name, run, key=None):
     client, sec, *_ = ctx(name)
+    key = backup_key(name, run, key)
     lock = {k: v["ref"] for k, v in P.load_json("reference/versions.lock.json").items()}
     acct = account_id()
     base_run = P.Run(client, run)
-    dest = {"project": client["id"] + "-restore"}
-    pid, env = P.ensure_project(dest, base_run)
+    dest = f"{client['id']}-restore-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}"
+    pid, env = P.create_project(dest, base_run)  # refuses an existing name, so it only ever deletes what it created
+    services_before = sorted(P.service_ids(pid))
     sec_restore = {"NOCODB_URL": "http://nocodb.railway.internal:8080"}
     pg = {"PGHOST": "postgres.railway.internal", "PGPORT": "5432"}
     admin = f"admin@{client['id']}.example"
     roles = {"LOADER_PASSWORD": sec["loader"], "NC_META_PASSWORD": sec["nc_meta"], "NC_READER_PASSWORD": sec["nc_reader"], "BACKUP_PASSWORD": sec["backup"]}
     spec = {
         "postgres": (lock["postgres"], {"POSTGRES_USER": "owner", "POSTGRES_PASSWORD": sec["postgres"], "POSTGRES_DB": "postgres", "PGDATA": "/var/lib/postgresql/data/pgdata"}, {}),
-        "restore": (lock["ops"], {**pg, **roles, "OPS_JOB": "restore", "SOURCE_CLIENT": client["id"], "POSTGRES_PASSWORD": sec["postgres"],
+        "restore": (lock["ops"], {**pg, **roles, "OPS_JOB": "restore", "SOURCE_CLIENT": client["id"], "RESTORE_KEY": key, "POSTGRES_PASSWORD": sec["postgres"],
                                   "BACKUP_SINK_URL": P.sink_url(acct), "BACKUP_SINK_READ_TOKEN": sec["sink_read"], "BACKUP_AGE_IDENTITY": sec["age_identity"]}, {"restartPolicyType": "NEVER"}),
         "nocodb": (lock["nocodb"], {"NC_DB": f"pg://postgres.railway.internal:5432?u=nocodb_meta_owner&p={sec['nc_meta']}&d=nocodb_meta",
                                     "NC_ALLOW_LOCAL_EXTERNAL_DBS": "true", "NC_CONNECTION_ENCRYPT_KEY": sec["nc_enc"], "NC_AUTH_JWT_SECRET": sec["nc_jwt"],
@@ -188,28 +246,32 @@ def cmd_restore(name, run):
         "verify": (lock["ops"], {**pg, "OPS_JOB": "restore-verify", "CLIENT_MARKER": client["marker"], "NOCODB_URL": sec_restore["NOCODB_URL"],
                                  "NC_ADMIN_EMAIL": admin, "NC_ADMIN_PASSWORD": sec["nc_admin"]}, {"restartPolicyType": "NEVER"}),
     }
-    ids = P.service_ids(pid)
+    ids = {}
     for svc, (image, variables, settings) in spec.items():
-        if svc not in ids:
-            ids[svc] = gql("mutation($i:ServiceCreateInput!){serviceCreate(input:$i){id}}", {"i": {"projectId": pid, "environmentId": env, "name": svc}})["serviceCreate"]["id"]
+        ids[svc] = gql("mutation($i:ServiceCreateInput!){serviceCreate(input:$i){id}}", {"i": {"projectId": pid, "environmentId": env, "name": svc}})["serviceCreate"]["id"]
         if svc == "postgres":
             P.ensure_volume(pid, env, ids, base_run)
         P.set_vars(pid, env, ids[svc], variables)
         P.set_instance(ids[svc], env, {"source": {"image": image}, "sleepApplication": False, **settings})
     P.wait_status(P.deploy(ids["postgres"], env), ("SUCCESS",))
     restored = wait_end(P.deploy(ids["restore"], env))
-    if not restored.get("ok"):
-        sys.exit("restore failed: " + json.dumps(restored)[:300])
-    P.wait_status(P.deploy(ids["nocodb"], env), ("SUCCESS",))
-    verified = wait_end(P.deploy(ids["verify"], env))
-    data = {"destination": dest["project"], "destination_empty_before": True, "restore": restored, "verify": verified,
-            "image_nocodb": lock["nocodb"], "image_postgres": lock["postgres"]}
-    store(out_path(run, name, "restore.json"), data)
+    verified = {}
+    if restored.get("ok"):
+        P.wait_status(P.deploy(ids["nocodb"], env), ("SUCCESS",))
+        verified = wait_end(P.deploy(ids["verify"], env))
+    empty_before = services_before == [] and restored.get("destination_databases_before") == [] and restored.get("destination_roles_before") == []
+    ok = bool(restored.get("ok")) and bool(verified.get("ok")) and empty_before and restored.get("key") == key
+    data = {"destination": dest, "destination_project_id": pid, "destination_services_before": services_before,
+            "destination_empty_before": empty_before, "requested_key": key, "restore": restored, "verify": verified,
+            "image_nocodb": lock["nocodb"], "image_postgres": lock["postgres"], "ok": ok}
+    store(out_path(run, name, "restore.json"), data, run)
     print(json.dumps(data)[:800])
-    if not verified.get("ok"):
-        sys.exit("restore not verified: project kept for inspection")
-    gql("mutation($i:String!){projectDelete(id:$i)}", {"i": pid})
-    print("restore project deleted", flush=True)
+    if not ok:
+        print(f"restore not verified: project {dest} kept for inspection", flush=True)
+        return False
+    gql("mutation($i:String!){projectDelete(id:$i)}", {"i": pid})  # the id created above, never one found by name
+    base_run.note("project_deleted", id=pid, name=dest)
+    return True
 
 
 def cmd_memory(name, run):
@@ -221,8 +283,9 @@ def cmd_memory(name, run):
                      {"s": ids[svc], "e": env, "st": start})["metrics"][0]["values"]
         nz = [v["value"] for v in series if v["value"] > 0]
         data[svc] = {"peak_gb": round(max(nz), 3) if nz else None, "last_gb": round(nz[-1], 3) if nz else None}
-    store(out_path(run, name, "memory.json"), data)
+    store(out_path(run, name, "memory.json"), data, run)
     print(json.dumps(data))
+    return all(v["peak_gb"] is not None for v in data.values())
 
 
 def cmd_stop(name, run):
@@ -233,6 +296,7 @@ def cmd_stop(name, run):
         if edges and not edges[0]["node"]["deploymentStopped"]:
             gql("mutation($i:String!){deploymentStop(id:$i)}", {"i": edges[0]["node"]["id"]})
     print("stopped", name)
+    return True
 
 
 def cmd_start(name, run):
@@ -242,6 +306,7 @@ def cmd_start(name, run):
     P.wait_status(P.deploy(ids["cloudflared"], env), ("SUCCESS",))
     P.wait_status(P.deploy(ids["backup"], env), ("SUCCESS",))
     print("started", name)
+    return True
 
 
 def service_view(pid, env, ids):
@@ -317,19 +382,28 @@ def cmd_audit(run):
         "deployed_identical": deployed["acme-mech"] == deployed["beacon-hvac"],
         "deployed_match_lock": all(d and any(d in ref for ref in lock.values()) for v in deployed.values() for d in v.values()),
     }
-    store(out_path(run, "audit.json"), data)
+    store(out_path(run, "audit.json"), data, run)
     print(json.dumps({k: data[k] for k in ("exposed", "shared_between_clients", "distinct_values", "total_values", "manifest_identical", "manifest_matches_lock", "config_diff")})[:900])
+    return (not exposed and not shared and data["distinct_values"] == data["total_values"] and data["manifest_identical"]
+            and data["manifest_matches_lock"] and not diffs and data["deployed_identical"] and data["deployed_match_lock"])
 
 
-if __name__ == "__main__":
+def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("command")
     ap.add_argument("client", nargs="?")
-    ap.add_argument("--run", default="20261101")
-    args = ap.parse_args()
-    funcs = {"checks": cmd_checks, "outside": cmd_outside, "replay": cmd_replay, "cron": cmd_cron, "restore": cmd_restore, "memory": cmd_memory, "stop": cmd_stop, "start": cmd_start}
-    if args.command == "audit":
-        cmd_audit(args.run)
-    else:
-        funcs[args.command](args.client, args.run)
-    print("usage", round(usage(P.WS)["currentUsage"], 5))
+    ap.add_argument("--run", default=P.default_run())
+    ap.add_argument("--key", help="restore: the backup key to restore instead of the one in this run's cron.json")
+    args = ap.parse_args(argv)
+    funcs = {"checks": cmd_checks, "outside": cmd_outside, "outside-cross": cmd_outside_cross, "replay": cmd_replay, "cron": cmd_cron,
+             "restore": lambda c, r: cmd_restore(c, r, args.key), "memory": cmd_memory, "stop": cmd_stop, "start": cmd_start}
+    ok = cmd_audit(args.run) if args.command == "audit" else funcs[args.command](args.client, args.run)
+    if args.command not in ("outside", "outside-cross"):  # the Access checks never call Railway
+        print("usage", round(usage(P.WS)["currentUsage"], 5))
+    if not ok:
+        print(f"FAILED: {args.command} {args.client or ''} (run {args.run})", flush=True)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

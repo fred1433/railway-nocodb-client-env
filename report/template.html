@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Railway setup check</title>
-<meta name="description" content="Two fictional client environments created from the same reference, checked on Railway, then removed.">
+<meta name="description" content="Two fictional client environments created from the same reference, checked on Railway, then stopped.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,18 +20,20 @@
     <p class="scope">Two fictional environments, <b>acme-mech</b> and <b>beacon-hvac</b>, created from the same reference.</p>
   </header>
 
+  <section class="findings" aria-label="Results">
+    {{findings}}
+  </section>
+  <p class="adapt">The setup and checks can be adapted to an existing client template.</p>
+
   <dl class="fields">
     <div><dt>Executed by</dt><dd>Frederic de Lavenne de Choulot</dd></div>
     <div><dt>Date</dt><dd>{{date}}</dd></div>
-    <div><dt>Versions lock</dt><dd><a href="{{commit_url}}">{{commit}}</a></dd></div>
+    <div class="wide"><dt>Version manifest</dt><dd><a href="{{commit_url}}">{{commit}}</a> <span class="aside">{{manifest_note}}</span></dd></div>
     <div><dt>Postgres</dt><dd>{{v_postgres}}</dd></div>
     <div><dt>NocoDB</dt><dd>{{v_nocodb}}</dd></div>
     <div><dt>cloudflared</dt><dd>{{v_cloudflared}}</dd></div>
   </dl>
-
-  <section class="findings" aria-label="Results">
-    {{findings}}
-  </section>
+  <p class="provenance">{{provenance}} {{later_checks}}</p>
 
   <section class="checks" aria-label="Checks">
     <div class="checks-head">
@@ -59,7 +61,6 @@
 
   <footer>
     <span>The AI Pipe</span>
-    <a href="https://cal.theaipipe.com">15 minutes with Frederic</a>
   </footer>
 </main>
 <script src="page.js" defer></script>

@@ -2,7 +2,8 @@
 """Second environment after the Railway quota stop.
 
     resume_b.py witness   one serviceCreate in the partial project, then deleted. Exit 0 if accepted, 3 if the quota holds.
-    resume_b.py go        remove the partial project, stand up from empty, converge the first client, run every proof.
+    resume_b.py go        remove the partial project, stand up from empty, converge the first client, run every proof,
+                          stopping at the first proof that fails.
 """
 import json, os, subprocess, sys, time
 sys.path.insert(0, os.path.dirname(__file__))
@@ -40,16 +41,9 @@ def go():
     sec.pop("project_id"); sec.pop("environment_id", None)
     P.save_secrets(sec, path)
     time.sleep(40)
-    head = subprocess.check_output(["git", "-C", ROOT, "rev-parse", "--short", "HEAD"], text=True).strip()
-    start = now()
     done = subprocess.run([sys.executable, "-W", "ignore", "provision/provision.py", "up", "beacon-hvac", "--run", RUN], cwd=ROOT, capture_output=True, text=True)
-    text = (done.stdout + done.stderr).strip()
-    attempts = json.load(open(FILE))
-    attempts.append({"attempt": len(attempts) + 1, "started": start, "ended": now(), "commit": head, "exit_code": done.returncode,
-                     "stopped_by": text.splitlines()[-1][:200] if done.returncode and text else None})
-    with open(FILE, "w") as fh:
-        json.dump(attempts, fh, indent=1)
-    print(json.dumps(attempts[-1]), flush=True)
+    attempts = json.load(open(FILE)) if os.path.exists(FILE) else []  # provision.py records the attempt itself
+    print(json.dumps(attempts[-1] if attempts else {"exit_code": done.returncode}), flush=True)
     if done.returncode:
         sys.exit(5)
     conv = subprocess.run([sys.executable, "-W", "ignore", "provision/provision.py", "up", "acme-mech", "--run", RUN], cwd=ROOT, capture_output=True, text=True)
@@ -59,7 +53,10 @@ def go():
     for step in (("checks", "beacon-hvac"), ("checks", "acme-mech"), ("checks", "beacon-hvac"), ("replay", "acme-mech"), ("replay", "beacon-hvac"),
                  ("outside", "acme-mech"), ("outside", "beacon-hvac"), ("cron", "acme-mech"), ("cron", "beacon-hvac"), ("restore", "acme-mech"), ("restore", "beacon-hvac"),
                  ("memory", "acme-mech"), ("memory", "beacon-hvac"), ("audit",), ("stop", "acme-mech"), ("stop", "beacon-hvac")):
-        prove(*step)
+        if prove(*step):
+            for name in ("acme-mech", "beacon-hvac"):  # do not leave the environments running after a failure
+                prove("stop", name)
+            sys.exit(f"stopped: prove.py {' '.join(step)} failed; later proofs not run")
 
 
 {"witness": witness, "go": go}[sys.argv[1]]()
