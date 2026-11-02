@@ -198,8 +198,10 @@ def row_web(c):
     parts = (anon, allowed, x_anon, x_own, x_peer)
     ok = all(p and p["ok"] for p in parts)
     when = cross["at"].replace("T", " ").rstrip("Z")
+    first = from_check(anon, "request without a token blocked")
+    first["cmd"] += f"; checked at {data[c]['outside']['at'].replace('T', ' ').rstrip('Z')} UTC, environments running"
     items = [
-        from_check(anon, "request without a token blocked"),
+        first,
         from_check(allowed, "this client's service token passes Access and NocoDB answers"),
         ev("the other client's valid service token blocked by Access", tidy("web.peer", x_peer["observed"]) if x_peer else "not run",
            f"{x_peer['cmd'] if x_peer else ''}; checked at {when} UTC, environments stopped",
@@ -421,7 +423,8 @@ values = {
     "manifest_note": e(f"beacon-hvac was stood up from {last_b['commit']}, which carries this manifest unchanged." if same_manifest_b else
                        f"beacon-hvac was stood up from {last_b['commit']}, whose manifest differs."),
     "provenance": e(provenance),
-    "later_checks": e(f"The cross-client Access check (line 5) and the backup sink concurrency check (line 10) ran after the environments were stopped, at {cross_at} and {utc(concurrency['at'])}, with the hardened scripts."),
+    "later_checks": e(f"The cross-client Access check (line 5) and the backup sink concurrency check (line 10) ran after the environments were stopped, "
+                      f"at {cross_at[11:16]} and {concurrency['at'][11:16]} UTC on {dt.date.fromisoformat(concurrency['at'][:10]).strftime('%-d %B')}, with the hardened scripts."),
     "v_postgres": e(first_word(inside(A, "manifest.postgres_runtime")["observed"])),
     "v_nocodb": e(inside(A, "manifest.nocodb_runtime")["observed"]),
     "v_cloudflared": e(audit["cloudflared_runtime"][A] or re.search(r":([0-9.]+)@", lock["cloudflared"]).group(1)),

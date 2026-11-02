@@ -47,7 +47,7 @@ h1 {
 
 .fields {
   display: grid;
-  grid-template-columns: 1.25fr .95fr 2.2fr .62fr .62fr .72fr;
+  grid-template-columns: 1.5fr .95fr 2fr .6fr .62fr .7fr;
   border-top: 2px solid var(--form);
   border-bottom: 2px solid var(--form);
 }
