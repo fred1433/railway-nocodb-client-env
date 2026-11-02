@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-02",
+  "removed": {
+    "railway": ["projects acme-mech, beacon-hvac and their restore projects", "account and workspace API tokens"],
+    "cloudflare": ["DNS records railway-check-a, railway-check-b", "Access applications and policies", "Access service tokens", "tunnels", "backup sink Worker and its R2 bucket"]
+  },
+  "kept": ["this report page"],
+  "verified": "Cloudflare API listing on 2026-11-02: no DNS record, Access application, service token or tunnel named railway; the only Worker left is the report page. Railway dashboard: no project, no API token."
+}
