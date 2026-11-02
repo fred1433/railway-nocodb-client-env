@@ -1,0 +1,28 @@
+{
+ "container_started": "2026-11-02T16:01:01.482944409Z",
+ "deployment_status": "SUCCESS",
+ "reference_schedule": "17 8 * * *",
+ "result": {
+  "age_header": "age-encryption.org/v1",
+  "dumps": {
+   "client_data": 5314,
+   "nocodb_meta": 545020
+  },
+  "encrypted_bytes": 563528,
+  "job": "backup",
+  "key": "beacon-hvac/20261102T160100Z.tar.age",
+  "ok": true,
+  "pg_dump": "pg_dump (PostgreSQL) 18.6 (Debian 18.6-1.pgdg13+2)",
+  "sha256": "c656d1d46787e362abc1aec617c335f4364a2a8108a454e57c7c3b42efaeb464"
+ },
+ "schedule_during_test": "*/5 * * * *",
+ "scheduled_for": "2026-11-02T16:00:00.000Z",
+ "stored": {
+  "contains_plain_marker": false,
+  "http": 200,
+  "sha256_match": true,
+  "starts_with_age_header": true
+ },
+ "write_token_cannot_read": 403,
+ "write_token_cannot_replace": 409
+}

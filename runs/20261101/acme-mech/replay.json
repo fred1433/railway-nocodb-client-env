@@ -1,0 +1,19 @@
+{
+ "after": {
+  "created": [],
+  "job": "bootstrap",
+  "ok": true,
+  "seconds": 0,
+  "state_digest": "6133aaed332a5d244fcf6a90dfea37edc15b10582c4736839c7cfdff171c0bce"
+ },
+ "before": {
+  "created": [],
+  "job": "bootstrap",
+  "ok": true,
+  "seconds": 32,
+  "state_digest": "6133aaed332a5d244fcf6a90dfea37edc15b10582c4736839c7cfdff171c0bce"
+ },
+ "created_on_replay": [],
+ "ok": true,
+ "same_digest": true
+}

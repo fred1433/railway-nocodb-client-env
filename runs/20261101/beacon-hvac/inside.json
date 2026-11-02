@@ -1,0 +1,146 @@
+{
+ "at": "2026-11-02T15:50:07Z",
+ "checks": [
+  {
+   "cmd": "INSERT INTO accounts",
+   "expected": "42501",
+   "id": "readonly.insert",
+   "observed": "42501 permission denied for table accounts",
+   "ok": true
+  },
+  {
+   "cmd": "CREATE TEMP TABLE",
+   "expected": "42501",
+   "id": "readonly.temp",
+   "observed": "42501 permission denied to create temporary tables in database \"client_data\"",
+   "ok": true
+  },
+  {
+   "cmd": "connect as nocodb_reader to nocodb_meta",
+   "expected": "connection refused by the server",
+   "id": "readonly.meta",
+   "observed": "FATAL:  permission denied for database \"nocodb_meta\"",
+   "ok": true
+  },
+  {
+   "cmd": "client_loader: CREATE TABLE; nocodb_reader: SELECT",
+   "expected": "row readable by the reader",
+   "id": "future.read",
+   "observed": "created after the grants",
+   "ok": true
+  },
+  {
+   "cmd": "nocodb_reader: INSERT on the new table",
+   "expected": "42501",
+   "id": "future.write",
+   "observed": "42501 permission denied for table future_probe_1793634596",
+   "ok": true
+  },
+  {
+   "cmd": "POST /api/v1/auth/user/signin (admin)",
+   "expected": "admin sign-in answers 200",
+   "id": "signup.control",
+   "observed": "HTTP 200",
+   "ok": true
+  },
+  {
+   "cmd": "GET /api/v2/meta/bases/{base}/tables",
+   "expected": [
+    "accounts",
+    "client_marker",
+    "monthly_close"
+   ],
+   "id": "source.tables",
+   "observed": [
+    "accounts",
+    "client_marker",
+    "monthly_close"
+   ],
+   "ok": true
+  },
+  {
+   "cmd": "SHOW server_version",
+   "expected": "version reported by the running server",
+   "id": "manifest.postgres_runtime",
+   "observed": "18.6 (Debian 18.6-1.pgdg13+2)",
+   "ok": true
+  },
+  {
+   "cmd": "SELECT marker FROM client_marker",
+   "expected": "beacon-hvac witness row 0001",
+   "id": "readonly.select",
+   "observed": "beacon-hvac witness row 0001",
+   "ok": true
+  },
+  {
+   "cmd": "GET /api/v2/tables/{client_marker}/records",
+   "expected": "beacon-hvac witness row 0001",
+   "id": "source.marker",
+   "observed": "beacon-hvac witness row 0001",
+   "ok": true
+  },
+  {
+   "cmd": "GET /api/v1/version",
+   "expected": "version reported by the running service",
+   "id": "manifest.nocodb_runtime",
+   "observed": "2026.10.1",
+   "ok": true
+  },
+  {
+   "cmd": "POST /api/v2/tables/{accounts}/records",
+   "expected": "write through NocoDB refused",
+   "id": "readonly.nocodb_write",
+   "observed": "HTTP 403 {'error': 'ERR_FORBIDDEN', 'message': \"Forbidden - Source 'client_data_ro' is read-only\"}",
+   "ok": true
+  },
+  {
+   "cmd": "POST /api/v1/auth/user/signup",
+   "expected": "anonymous sign-up rejected, user count unchanged",
+   "id": "signup.anonymous",
+   "observed": "HTTP 400 Not allowed to signup, contact super admin. If y; users 1 -> 1",
+   "ok": true
+  },
+  {
+   "cmd": "getaddrinfo nocodb-beacon-hvac.railway.internal; connect :8080",
+   "expected": "own private host resolves and answers",
+   "id": "network.own",
+   "observed": {
+    "addrs": [
+     "10.246.62.147",
+     "fd12:994f:2828:1:d000:92:d3f6:3e93"
+    ],
+    "tcp_8080": "connected"
+   },
+   "ok": true
+  },
+  {
+   "cmd": "getaddrinfo nocodb-acme-mech.railway.internal",
+   "expected": "peer private host does not resolve",
+   "id": "network.peer_dns",
+   "observed": "[Errno -2] Name or service not known",
+   "ok": true
+  },
+  {
+   "cmd": "connect 10.139.159.228:8080",
+   "expected": "peer private address not reachable",
+   "id": "network.peer_addr",
+   "observed": "10.139.159.228: TimeoutError: timed out",
+   "ok": true
+  },
+  {
+   "cmd": "connect fd12:aa30:b056:1:d000:143:f20b:9fe4:8080",
+   "expected": "peer private address not reachable",
+   "id": "network.peer_addr",
+   "observed": "fd12:aa30:b056:1:d000:143:f20b:9fe4: OSError: [Errno 101] Network is unreachable",
+   "ok": true
+  }
+ ],
+ "deployment": "eae673f8-75a6-43c0-8ebb-a1c5479022fd",
+ "peer_addrs_tested": "10.139.159.228,fd12:aa30:b056:1:d000:143:f20b:9fe4",
+ "result": {
+  "failed": [],
+  "job": "checks",
+  "ok": true,
+  "total": 17
+ }
+}

@@ -1,5 +1,5 @@
 {
- "at": "2026-11-01T15:32:34Z",
+ "at": "2026-11-02T15:49:46Z",
  "checks": [
   {
    "cmd": "SHOW server_version",
@@ -31,10 +31,10 @@
   },
   {
    "cmd": "connect as nocodb_reader to nocodb_meta",
-   "expected": "42501",
+   "expected": "connection refused by the server",
    "id": "readonly.meta",
-   "observed": "None connection failed: connection to server at \"10.227.63.82\", port 5432 failed: FATAL:  permission denied for database \"nocodb_meta\"",
-   "ok": false
+   "observed": "FATAL:  permission denied for database \"nocodb_meta\"",
+   "ok": true
   },
   {
    "cmd": "client_loader: CREATE TABLE; nocodb_reader: SELECT",
@@ -47,7 +47,7 @@
    "cmd": "nocodb_reader: INSERT on the new table",
    "expected": "42501",
    "id": "future.write",
-   "observed": "42501 permission denied for table future_probe_1793547152",
+   "observed": "42501 permission denied for table future_probe_1793634574",
    "ok": true
   },
   {
@@ -97,8 +97,8 @@
    "cmd": "POST /api/v1/auth/user/signup",
    "expected": "anonymous sign-up rejected, user count unchanged",
    "id": "signup.anonymous",
-   "observed": "HTTP 200 {'token': '[redacted].[redacted]; users 1 -> 2",
-   "ok": false
+   "observed": "HTTP 400 Not allowed to signup, contact super admin. If y; users 1 -> 1",
+   "ok": true
   },
   {
    "cmd": "getaddrinfo nocodb-acme-mech.railway.internal; connect :8080",
@@ -106,8 +106,8 @@
    "id": "network.own",
    "observed": {
     "addrs": [
-     "10.150.129.90",
-     "fd12:a4a0:3216:1:d000:210:d616:815a"
+     "10.139.159.228",
+     "fd12:aa30:b056:1:d000:143:f20b:9fe4"
     ],
     "tcp_8080": "connected"
    },
@@ -119,17 +119,28 @@
    "id": "network.peer_dns",
    "observed": "[Errno -2] Name or service not known",
    "ok": true
+  },
+  {
+   "cmd": "connect 10.246.62.147:8080",
+   "expected": "peer private address not reachable",
+   "id": "network.peer_addr",
+   "observed": "10.246.62.147: TimeoutError: timed out",
+   "ok": true
+  },
+  {
+   "cmd": "connect fd12:994f:2828:1:d000:92:d3f6:3e93:8080",
+   "expected": "peer private address not reachable",
+   "id": "network.peer_addr",
+   "observed": "fd12:994f:2828:1:d000:92:d3f6:3e93: OSError: [Errno 101] Network is unreachable",
+   "ok": true
   }
  ],
- "deployment": "89502cbd-b1dc-4c9b-bc2b-89e187103008",
- "peer_addrs_tested": "",
+ "deployment": "1b6f12d2-6041-43e7-ae4c-7fb314bcb2c5",
+ "peer_addrs_tested": "10.246.62.147,fd12:994f:2828:1:d000:92:d3f6:3e93",
  "result": {
-  "failed": [
-   "readonly.meta",
-   "signup.anonymous"
-  ],
+  "failed": [],
   "job": "checks",
-  "ok": false,
-  "total": 15
+  "ok": true,
+  "total": 17
  }
 }

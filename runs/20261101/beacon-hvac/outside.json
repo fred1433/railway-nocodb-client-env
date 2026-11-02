@@ -1,0 +1,33 @@
+{
+ "at": "2026-11-02T15:50:49Z",
+ "checks": [
+  {
+   "cmd": "GET https://railway-check-b.theaipipe.com/api/v1/health",
+   "expected": "not served by NocoDB",
+   "id": "web.anonymous",
+   "observed": "HTTP 403, Location host None",
+   "ok": true
+  },
+  {
+   "cmd": "same request with the allowed service token",
+   "expected": "served by NocoDB (HTTP 200)",
+   "id": "web.allowed",
+   "observed": "HTTP 200 {\"message\":\"OK\",\"timestamp\":1793634648920,\"uptime\":243.43089778}",
+   "ok": true
+  },
+  {
+   "cmd": "same request with a valid token outside the policy",
+   "expected": "refused: valid token, not in the policy",
+   "id": "web.other",
+   "observed": "HTTP 403, Location host None",
+   "ok": true
+  },
+  {
+   "cmd": "GET /api/v2/meta/bases with the allowed service token, no NocoDB session",
+   "expected": "NocoDB still asks for its own login after Access",
+   "id": "web.second_login",
+   "observed": "HTTP 401 {\"error\":\"ERR_AUTHENTICATION_REQUIRED\",\"message\":\"Authentication required - Inva",
+   "ok": true
+  }
+ ]
+}

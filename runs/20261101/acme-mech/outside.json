@@ -1,18 +1,18 @@
 {
- "at": "2026-11-01T15:32:38Z",
+ "at": "2026-11-02T15:50:46Z",
  "checks": [
   {
    "cmd": "GET https://railway-check-a.theaipipe.com/api/v1/health",
-   "expected": "not served: redirected to the Access login",
+   "expected": "not served by NocoDB",
    "id": "web.anonymous",
    "observed": "HTTP 403, Location host None",
-   "ok": false
+   "ok": true
   },
   {
    "cmd": "same request with the allowed service token",
    "expected": "served by NocoDB (HTTP 200)",
    "id": "web.allowed",
-   "observed": "HTTP 200 {\"message\":\"OK\",\"timestamp\":1793547157451,\"uptime\":79.36111411}",
+   "observed": "HTTP 200 {\"message\":\"OK\",\"timestamp\":1793634645998,\"uptime\":146.343019979}",
    "ok": true
   },
   {

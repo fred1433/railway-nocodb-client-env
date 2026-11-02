@@ -1,0 +1,29 @@
+{
+ "after": {
+  "created": [],
+  "job": "bootstrap",
+  "ok": true,
+  "seconds": 2,
+  "state_digest": "d17a37729416170144d551b515b5cf977f1b9ab2cfb3e389e42d9a58f758597f"
+ },
+ "before": {
+  "created": [
+   "role:client_loader",
+   "role:nocodb_meta_owner",
+   "role:nocodb_reader",
+   "role:backup_runner",
+   "database:client_data",
+   "database:nocodb_meta",
+   "nocodb:invite_only_signup",
+   "nocodb:base",
+   "nocodb:source"
+  ],
+  "job": "bootstrap",
+  "ok": true,
+  "seconds": 35,
+  "state_digest": "d17a37729416170144d551b515b5cf977f1b9ab2cfb3e389e42d9a58f758597f"
+ },
+ "created_on_replay": [],
+ "ok": true,
+ "same_digest": true
+}

@@ -1,5 +1,5 @@
-// Gabarit : remplacer railway-setup-check. Sert site/ sous https://theaipipe.com/demos/railway-setup-check/ (static files only).
-// The route is more specific than the galerie-presell route theaipipe.com/demos/*, so it wins.
+// Serves site/ under https://theaipipe.com/demos/railway-setup-check/ (static files only).
+// This route is more specific than the generic theaipipe.com/demos/* route, so it wins.
 const BASE = '/demos/railway-setup-check';
 export default {
   async fetch(request, env) {

@@ -1,0 +1,140 @@
+{
+ "at": "2026-11-02T16:04:50Z",
+ "cloudflared_runtime": {
+  "acme-mech": "2026.10.7",
+  "beacon-hvac": "2026.10.7"
+ },
+ "config_diff": [],
+ "deployed_digests": {
+  "acme-mech": {
+   "backup": "sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "bootstrap": "sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "checks": "sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "cloudflared": "sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba",
+   "nocodb": "sha256:8c2dd06896d95e750d55010e529972c22c1ee73b22dce321b1d2de2e7d5cd6ae",
+   "postgres": "sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81"
+  },
+  "beacon-hvac": {
+   "backup": "sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "bootstrap": "sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "checks": "sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "cloudflared": "sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba",
+   "nocodb": "sha256:8c2dd06896d95e750d55010e529972c22c1ee73b22dce321b1d2de2e7d5cd6ae",
+   "postgres": "sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81"
+  }
+ },
+ "deployed_identical": true,
+ "deployed_match_lock": true,
+ "distinct_values": 22,
+ "exposed": [],
+ "fingerprints": {
+  "acme-mech": {
+   "BACKUP_PASSWORD": "2032785b3291",
+   "BACKUP_SINK_TOKEN": "c6514b4d168e",
+   "LOADER_PASSWORD": "588d685cc464",
+   "NC_ADMIN_PASSWORD": "f73035027f39",
+   "NC_AUTH_JWT_SECRET": "047730e74e4a",
+   "NC_CONNECTION_ENCRYPT_KEY": "bcbbe600d099",
+   "NC_DB": "8212c9f5e4fc",
+   "NC_META_PASSWORD": "043081556952",
+   "NC_READER_PASSWORD": "389d72ba227d",
+   "POSTGRES_PASSWORD": "051a1315742f",
+   "TUNNEL_TOKEN": "df0500f852d4"
+  },
+  "beacon-hvac": {
+   "BACKUP_PASSWORD": "10520e5aba4e",
+   "BACKUP_SINK_TOKEN": "e9ace5274ed8",
+   "LOADER_PASSWORD": "03280fcb08ed",
+   "NC_ADMIN_PASSWORD": "07324d173e39",
+   "NC_AUTH_JWT_SECRET": "991b75ad2cd3",
+   "NC_CONNECTION_ENCRYPT_KEY": "07560ba4c91a",
+   "NC_DB": "463c9d46819d",
+   "NC_META_PASSWORD": "6add21602252",
+   "NC_READER_PASSWORD": "2b6de3ed1593",
+   "POSTGRES_PASSWORD": "0d161ba17255",
+   "TUNNEL_TOKEN": "2e78a5438ded"
+  }
+ },
+ "inventory": {
+  "acme-mech": {
+   "backup": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "bootstrap": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "checks": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "cloudflared": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "nocodb": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "postgres": {
+    "domains": 0,
+    "tcp_proxies": 0
+   }
+  },
+  "beacon-hvac": {
+   "backup": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "bootstrap": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "checks": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "cloudflared": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "nocodb": {
+    "domains": 0,
+    "tcp_proxies": 0
+   },
+   "postgres": {
+    "domains": 0,
+    "tcp_proxies": 0
+   }
+  }
+ },
+ "lock": {
+  "cloudflared": "cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba",
+  "nocodb": "nocodb/nocodb:2026.10.1@sha256:8c2dd06896d95e750d55010e529972c22c1ee73b22dce321b1d2de2e7d5cd6ae",
+  "ops": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+  "postgres": "postgres:18.6@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81"
+ },
+ "manifest": {
+  "acme-mech": {
+   "backup": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "bootstrap": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "checks": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "cloudflared": "cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba",
+   "nocodb": "nocodb/nocodb:2026.10.1@sha256:8c2dd06896d95e750d55010e529972c22c1ee73b22dce321b1d2de2e7d5cd6ae",
+   "postgres": "postgres:18.6@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81"
+  },
+  "beacon-hvac": {
+   "backup": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "bootstrap": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "checks": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2",
+   "cloudflared": "cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba",
+   "nocodb": "nocodb/nocodb:2026.10.1@sha256:8c2dd06896d95e750d55010e529972c22c1ee73b22dce321b1d2de2e7d5cd6ae",
+   "postgres": "postgres:18.6@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81"
+  }
+ },
+ "manifest_identical": true,
+ "manifest_matches_lock": true,
+ "shared_between_clients": [],
+ "total_values": 22
+}

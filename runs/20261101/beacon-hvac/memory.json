@@ -1,0 +1,14 @@
+{
+ "cloudflared": {
+  "last_gb": 0.031,
+  "peak_gb": 0.031
+ },
+ "nocodb": {
+  "last_gb": 0.718,
+  "peak_gb": 0.993
+ },
+ "postgres": {
+  "last_gb": 0.093,
+  "peak_gb": 0.172
+ }
+}

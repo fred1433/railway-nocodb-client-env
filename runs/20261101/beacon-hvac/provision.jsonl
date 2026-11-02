@@ -1,0 +1,29 @@
+{"client": "beacon-hvac", "images": {"cloudflared": "cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba", "nocodb": "nocodb/nocodb:2026.10.1@sha256:8c2dd06896d95e750d55010e529972c22c1ee73b22dce321b1d2de2e7d5cd6ae", "ops": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:51338b100ef683bd6b11a5c2a11f20f4607c9e1a4df921f32a3a71955abc97bd", "postgres": "postgres:18.6@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81"}, "step": "start", "t": "2026-11-01T15:38:04Z"}
+{"id": "3dd4648b-a77a-4c6c-a36c-db656a7a30e4", "reused": false, "step": "tunnel", "t": "2026-11-01T15:38:05Z"}
+{"app": "railway-check-b", "identity_provider": "onetimepin", "policy": "b404709c-1b21-4b13-a280-06f04b89020c", "step": "access", "t": "2026-11-01T15:38:08Z"}
+{"id": "dd8be03a-97d1-4ba6-8534-b1986ce3b966", "step": "project_created", "t": "2026-11-01T15:38:10Z"}
+{"name": "postgres", "step": "service_created", "t": "2026-11-01T15:38:11Z"}
+{"service": "postgres", "step": "volume_created", "t": "2026-11-01T15:38:13Z"}
+{"name": "bootstrap", "step": "service_created", "t": "2026-11-01T15:38:14Z"}
+{"client": "beacon-hvac", "images": {"cloudflared": "cloudflare/cloudflared:2026.10.7@sha256:4955524aeaa379e154023d5a027c250f7b35041a2e7e950cf13f144bc9b9c5ba", "nocodb": "nocodb/nocodb:2026.10.1@sha256:8c2dd06896d95e750d55010e529972c22c1ee73b22dce321b1d2de2e7d5cd6ae", "ops": "ghcr.io/fred1433/railway-nocodb-client-env/ops@sha256:4b0b6301508a0993900229fcc4a7b0393f3d80c257c37977c97d1db61cf666f2", "postgres": "postgres:18.6@sha256:3a4264520e121176619f54ff867d12774bc81e95e7b84db58d63bccdb6144b81"}, "step": "start", "t": "2026-11-02T15:45:48Z"}
+{"id": "3dd4648b-a77a-4c6c-a36c-db656a7a30e4", "reused": true, "step": "tunnel", "t": "2026-11-02T15:45:49Z"}
+{"app": "railway-check-b", "identity_provider": "onetimepin", "policy": "b404709c-1b21-4b13-a280-06f04b89020c", "step": "access", "t": "2026-11-02T15:45:51Z"}
+{"id": "c73d14b2-b0cc-48f8-b4fc-822d91147785", "step": "project_created", "t": "2026-11-02T15:45:54Z"}
+{"name": "postgres", "step": "service_created", "t": "2026-11-02T15:45:54Z"}
+{"service": "postgres", "step": "volume_created", "t": "2026-11-02T15:45:56Z"}
+{"name": "bootstrap", "step": "service_created", "t": "2026-11-02T15:45:57Z"}
+{"name": "nocodb", "step": "service_created", "t": "2026-11-02T15:45:59Z"}
+{"name": "cloudflared", "step": "service_created", "t": "2026-11-02T15:46:01Z"}
+{"name": "backup", "step": "service_created", "t": "2026-11-02T15:46:02Z"}
+{"name": "checks", "step": "service_created", "t": "2026-11-02T15:46:04Z"}
+{"dns_created": true, "hostname": "railway-check-b.theaipipe.com", "protect_with_access": true, "step": "tunnel_route", "t": "2026-11-02T15:46:09Z"}
+{"service": "postgres", "step": "deploy", "t": "2026-11-02T15:46:09Z"}
+{"service": "bootstrap", "step": "deploy", "t": "2026-11-02T15:46:23Z"}
+{"service": "nocodb", "step": "deploy", "t": "2026-11-02T15:46:34Z"}
+{"dns": "nocodb-beacon-hvac.railway.internal", "step": "private_name", "t": "2026-11-02T15:46:52Z"}
+{"created": ["role:client_loader", "role:nocodb_meta_owner", "role:nocodb_reader", "role:backup_runner", "database:client_data", "database:nocodb_meta", "nocodb:invite_only_signup", "nocodb:base", "nocodb:source"], "seconds": 35, "state_digest": "d17a37729416170144d551b515b5cf977f1b9ab2cfb3e389e42d9a58f758597f", "step": "bootstrap_done", "t": "2026-11-02T15:47:09Z"}
+{"service": "cloudflared", "step": "deploy", "t": "2026-11-02T15:47:09Z"}
+{"client": "beacon-hvac", "step": "up_complete", "t": "2026-11-02T15:47:28Z"}
+{"current": 0.00893, "step": "usage", "t": "2026-11-02T15:47:29Z"}
+{"id": "71f7c8bc-94fc-4374-8451-52a053d25e19", "step": "project_created", "t": "2026-11-02T16:02:52Z"}
+{"service": "postgres", "step": "volume_created", "t": "2026-11-02T16:02:54Z"}
